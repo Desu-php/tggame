@@ -1,0 +1,41 @@
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Локальные настройки редакторов
+.vscode/
+.idea/
+
+# Конфигурации среды
+.env
+.env.local
+
+# Кэш и временные файлы
+*.log
+*.tmp
+*.pid
+*.bak
+*.swp
+*.swo
+
+# Артефакты сборки и зависимости
+bin/
+obj/
+*.out
+*.exe
+
+# Go-специфические файлы
+/vendor/
+*.test
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Логи и временные файлы
+logs/
+*.log
+
+# Конфиденциальные файлы
+config/*.secret.json
+config/*.secret.yml
