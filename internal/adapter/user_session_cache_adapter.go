@@ -14,7 +14,7 @@ type userSessionAdapter struct {
 	repo repository.UserRepository
 }
 
-func NewUserSessionCacheAdapter(repo repository.UserRepository) *userSessionAdapter{
+func NewUserSessionCacheAdapter(repo repository.UserRepository) UserSessionAdapter{
 	return &userSessionAdapter{repo: repo}
 }
 
@@ -23,6 +23,10 @@ func(u *userSessionAdapter) Get(key uint64) (string,error) {
 
    if err != nil {
 		return "", fmt.Errorf("Get: %w", err)
+   }
+
+   if user == nil {
+		return "", nil
    }
 
    return user.Session, nil

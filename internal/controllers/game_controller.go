@@ -7,14 +7,19 @@ import (
 	"example.com/v2/internal/services"
 	"example.com/v2/pkg/dto"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 type GameController struct {
 	service *services.GameService
+	logger *logrus.Logger
 }
 
-func NewGameController(service *services.GameService) *GameController {
-	return &GameController{service: service}
+func NewGameController(service *services.GameService, logger *logrus.Logger) *GameController {
+	return &GameController{
+		service: service,
+		logger: logger,
+	}
 }
 
 func (gc *GameController) Start(c *gin.Context) {
@@ -29,8 +34,9 @@ func (gc *GameController) Start(c *gin.Context) {
 	user, err := gc.service.Start(&dto)
 
 	if err != nil {
+		gc.logger.WithContext(c).Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Something went wrong",
+			"error": "Server error",
 		})
 		return
 	}

@@ -38,7 +38,7 @@ func (r *userRepository) FindById(id uint64) (*models.User, error) {
 	}
 
 	if result.Error != nil {
-		return nil, fmt.Errorf("FindById: error %w", result.Error)
+		return nil, fmt.Errorf("FindById: err %w", result.Error)
 	}
 
 	return &user, nil
@@ -51,7 +51,7 @@ func (r *userRepository) Create(dto CreateUserDTO) (*models.User, error) {
 	}
 
 	if err := r.db.Create(user).Error; err != nil {
-		return nil, fmt.Errorf("Create: error %w", err)
+		return nil, fmt.Errorf("Create: err %w", err)
 	}
 
 	return user, nil
@@ -74,7 +74,7 @@ func (r *userRepository) FindByTgId(id uint64) (*models.User, error) {
 	}
 
 	if result.Error != nil {
-		return nil, fmt.Errorf("FindByTgId: error %w", result.Error)
+		return nil, fmt.Errorf("FindByTgId: err %w", result.Error)
 	}
 
 	return &user, nil
@@ -84,7 +84,7 @@ func (r *userRepository) UpdateSession(user *models.User, session string) error 
 	result := r.db.Model(&user).Update("session", session)
 	
 	if result.Error != nil {
-		return fmt.Errorf("UpdateSession: error %w", result.Error)
+		return fmt.Errorf("UpdateSession: err %w", result.Error)
 	}
 	
 	return nil

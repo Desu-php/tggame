@@ -21,7 +21,7 @@ func (u *UserService) FirstOrCreateByTgId(dto *dto.GameStartDto) (*models.User, 
 	user, err := u.repo.FindByTgId(dto.TelegramId)
 
 	if err != nil {
-		return nil, fmt.Errorf("FirstOrCreateByTgId: err %w", err)
+		return nil, fmt.Errorf("FirstOrCreateByTgId: %w", err)
 	}
 
 	if user != nil {
@@ -44,8 +44,8 @@ func (u UserService) GenerateSession(user *models.User) (*models.User, error) {
 		return nil, fmt.Errorf("GenerateSession: err %w", err)
 	}
 
- 	u.repo.UpdateSession(user, session)
-  user.Session = session
+	u.repo.UpdateSession(user, session)
+	user.Session = session
 
-  return user, nil
+	return user, nil
 }

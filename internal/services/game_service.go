@@ -23,12 +23,12 @@ func (g *GameService) Start(dto *dto.GameStartDto) (*models.User, error) {
 	err := g.transactionManager.RunInTransaction(func() error {
 		user, err := g.userService.FirstOrCreateByTgId(dto)
 		if err != nil {
-			return fmt.Errorf("Start: error %w", err)
+			return fmt.Errorf("Start: err %w", err)
 		}
 
 		user, err = g.userService.GenerateSession(user)
 		if err != nil {
-			return fmt.Errorf("Start: error %w", err)
+			return fmt.Errorf("Start: err %w", err)
 		}
 
 		result = user
