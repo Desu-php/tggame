@@ -3,18 +3,20 @@ package services
 import (
 	"fmt"
 
+	"example.com/v2/internal/adapter"
 	"example.com/v2/internal/models"
 	"example.com/v2/pkg/dto"
 	"example.com/v2/pkg/transaction"
 )
 
-type GameService struct{
-	userService *UserService
+type GameService struct {
+	userService        *UserService
 	transactionManager transaction.TransactionManager
+	cacheAdapter       adapter.UserSessionAdapter
 }
 
-func NewGameService(userService *UserService, txManager transaction.TransactionManager) *GameService{
-	return &GameService{userService: userService, transactionManager: txManager}
+func NewGameService(userService *UserService, txManager transaction.TransactionManager, adapter adapter.UserSessionAdapter) *GameService {
+	return &GameService{userService: userService, transactionManager: txManager, cacheAdapter: adapter}
 }
 
 func (g *GameService) Start(dto *dto.GameStartDto) (*models.User, error) {
@@ -37,6 +39,12 @@ func (g *GameService) Start(dto *dto.GameStartDto) (*models.User, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	err = g.cacheAdapter.Set(result.TelegramID, result.Session)
+
+	if err != nil {
+		return nil, fmt.Errorf("Start: err %w", err)
 	}
 
 	return result, nil

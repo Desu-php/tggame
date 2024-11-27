@@ -1,9 +1,11 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
+	"fmt"
 	"log"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -11,6 +13,7 @@ type Config struct {
 	AppEnv   string
 	AppPort  string
 	Database *Database
+	Redis *Redis
 }
 
 type Database struct {
@@ -21,13 +24,19 @@ type Database struct {
 	Passord string
 }
 
+type Redis struct {
+	Host string
+	Port string
+	Password string
+}
+
 func LoadConfig() *Config {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	return &Config{
+	cfg := &Config{
 		AppName: os.Getenv("APP_NAME"),
 		AppEnv:  os.Getenv("APP_ENV"),
 		AppPort: os.Getenv("APP_PORT"),
@@ -38,5 +47,15 @@ func LoadConfig() *Config {
 			User:    os.Getenv("DB_USERNAME"),
 			Passord: os.Getenv("DB_PASSWORD"),
 		},
+		Redis: &Redis{
+			Host: os.Getenv("REDIS_HOST"),
+			Port: os.Getenv("REDIS_PORT"),
+			Password: os.Getenv("REDIS_PASSWORD"),
+		},
+
 	}
+
+	fmt.Println(cfg)
+
+	return cfg
 }

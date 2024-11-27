@@ -11,6 +11,7 @@ import (
 	"example.com/v2/config"
 	"example.com/v2/internal/adapter"
 	"example.com/v2/internal/controllers"
+	"example.com/v2/internal/redis"
 	"example.com/v2/internal/repository"
 	"example.com/v2/internal/services"
 	"example.com/v2/pkg"
@@ -23,7 +24,8 @@ func main() {
 	app := fx.New(
 		fx.Provide(
 			config.LoadConfig,
-			NewGinEngine,                 
+			NewGinEngine,
+			redis.NewRedisClient,             
 		),
 		repository.Module,
 		adapter.Module,
