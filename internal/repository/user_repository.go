@@ -68,7 +68,7 @@ func (r *userRepository) GetAll() ([]models.User, error) {
 func (r *userRepository) FindByTgId(id uint64) (*models.User, error) {
 	var user models.User
 
-	result := r.db.First(&user, "telegram_id = ?", id)
+	result := r.db.Preload("UserChest.Chest").First(&user, "telegram_id = ?", id)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}

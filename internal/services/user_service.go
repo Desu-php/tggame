@@ -7,14 +7,25 @@ import (
 	"example.com/v2/internal/repository"
 	"example.com/v2/pkg/dto"
 	"example.com/v2/pkg/str"
+	"example.com/v2/pkg/transaction"
 )
 
 type UserService struct {
-	repo repository.UserRepository
+	repo             repository.UserRepository
+	userChestService *UserChestService
+	transaction      transaction.TransactionManager
 }
 
-func NewUserService(repo repository.UserRepository) *UserService {
-	return &UserService{repo: repo}
+func NewUserService(
+	repo repository.UserRepository,
+	userChestService *UserChestService,
+	transaction transaction.TransactionManager,
+) *UserService {
+	return &UserService{
+		repo:             repo,
+		userChestService: userChestService,
+		transaction:      transaction,
+	}
 }
 
 func (u *UserService) FirstOrCreateByTgId(dto *dto.GameStartDto) (*models.User, error) {
@@ -28,11 +39,23 @@ func (u *UserService) FirstOrCreateByTgId(dto *dto.GameStartDto) (*models.User, 
 		return user, nil
 	}
 
-	user, err = u.repo.Create(repository.CreateUserDTO{TelegramID: dto.TelegramId, Username: dto.Username})
+	u.transaction.RunInTransaction(func() error {
+		user, err = u.repo.Create(repository.CreateUserDTO{TelegramID: dto.TelegramId, Username: dto.Username})
 
-	if err != nil {
-		return nil, fmt.Errorf("FirstOrCreateByTgId: err %w", err)
-	}
+		if err != nil {
+			return fmt.Errorf("FirstOrCreateByTgId: err %w", err)
+		}
+
+		userChest, err := u.userChestService.Create(user)
+
+		if err != nil {
+			return fmt.Errorf("FirstOrCreateByTgId: err %w", err)
+		}
+
+		user.UserChest = *userChest
+
+		return  nil
+	})
 
 	return user, nil
 }
