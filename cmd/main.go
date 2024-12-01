@@ -25,7 +25,7 @@ func main() {
 		fx.Provide(
 			config.LoadConfig,
 			NewGinEngine,
-			redis.NewRedisClient,             
+			redis.NewRedisClient,
 		),
 		repository.Module,
 		adapter.Module,
@@ -34,6 +34,9 @@ func main() {
 		pkg.Module,
 		fx.Invoke(routes.RegisterRoutes),
 		fx.Invoke(StartServer),
+		fx.Invoke(func ()  {
+			go processClicks()
+		}),
 	)
 
 	if err := app.Start(context.Background()); err != nil {
@@ -56,7 +59,6 @@ func main() {
 	log.Println("Application stopped")
 }
 
-
 func NewGinEngine() *gin.Engine {
 	return gin.Default()
 }
@@ -68,4 +70,9 @@ func StartServer(router *gin.Engine, cfg *config.Config) {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()
+}
+
+func processClicks() {
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
 }

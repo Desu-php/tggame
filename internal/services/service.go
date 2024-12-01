@@ -6,4 +6,5 @@ var Module = fx.Provide(
 	NewUserService,
 	NewGameService,
 	NewUserChestService,
+	NewClickService,
 )

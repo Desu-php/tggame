@@ -15,6 +15,7 @@ func RegisterRoutes(
 	gameController *controllers.GameController,
 	sessionAdapter adapter.UserSessionAdapter,
 	logger *logrus.Logger,
+	clickController *controllers.ClickController,
 	) {
 		
 	game := r.Group("/api/game")
@@ -28,5 +29,8 @@ func RegisterRoutes(
 		api.GET("/test", func(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK,  gin.H{"Success": true})
 		})
+
+		api.POST("click", clickController.Store)
+		api.GET("clicks", clickController.Get)
 	}
 }

@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log"
 
 	"example.com/v2/internal/adapter"
 	"example.com/v2/internal/models"
@@ -16,6 +17,7 @@ type GameService struct {
 }
 
 func NewGameService(userService *UserService, txManager transaction.TransactionManager, adapter adapter.UserSessionAdapter) *GameService {
+	log.Println("NewGameService")
 	return &GameService{userService: userService, transactionManager: txManager, cacheAdapter: adapter}
 }
 
