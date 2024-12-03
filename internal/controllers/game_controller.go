@@ -23,7 +23,6 @@ func NewGameController(service *services.GameService, logger *logrus.Logger) *Ga
 }
 
 func (gc *GameController) Start(c *gin.Context) {
-
 	var dto dto.GameStartDto
 
 	if err := c.ShouldBindJSON(&dto); err != nil {

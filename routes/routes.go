@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"example.com/v2/config"
 	"example.com/v2/internal/adapter"
 	"example.com/v2/internal/controllers"
 	"example.com/v2/internal/middleware"
@@ -16,7 +17,10 @@ func RegisterRoutes(
 	sessionAdapter adapter.UserSessionAdapter,
 	logger *logrus.Logger,
 	clickController *controllers.ClickController,
+	cfg *config.Config,
 	) {
+		
+	r.Use(middleware.TelegramHashCheck(cfg))
 		
 	game := r.Group("/api/game")
 	{

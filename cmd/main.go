@@ -16,6 +16,7 @@ import (
 	"example.com/v2/internal/services"
 	"example.com/v2/pkg"
 	"example.com/v2/routes"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
@@ -65,6 +66,17 @@ func NewGinEngine() *gin.Engine {
 
 func StartServer(router *gin.Engine, cfg *config.Config) {
 	go func() {
+		config := cors.Config{
+			AllowOrigins:     []string{"*"}, // Разрешённый домен
+			AllowMethods:     []string{"*"}, // Разрешённые методы
+			AllowHeaders:     []string{"*"}, // Разрешённые заголовки
+			ExposeHeaders:    []string{"*"},          // Заголовки, доступные клиенту
+			AllowCredentials: true,                                               // Для запросов с куками
+			MaxAge:           12 * time.Hour,                                     // Время кеширования CORS-политики
+		}
+
+		router.Use(cors.New(config))
+
 		log.Printf("Starting server on port %s", cfg.AppPort)
 		if err := router.Run("localhost:" + cfg.AppPort); err != nil {
 			log.Fatalf("Failed to start server: %v", err)

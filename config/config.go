@@ -14,6 +14,7 @@ type Config struct {
 	AppPort  string
 	Database *Database
 	Redis *Redis
+	Telegram *Telegram
 }
 
 type Database struct {
@@ -28,6 +29,10 @@ type Redis struct {
 	Host string
 	Port string
 	Password string
+}
+
+type Telegram struct {
+	Token string
 }
 
 func LoadConfig() *Config {
@@ -52,7 +57,9 @@ func LoadConfig() *Config {
 			Port: os.Getenv("REDIS_PORT"),
 			Password: os.Getenv("REDIS_PASSWORD"),
 		},
-
+		Telegram: &Telegram{
+			Token: os.Getenv("TELEGRAM_BOT_TOKEN"),
+		},
 	}
 
 	fmt.Println(cfg)
