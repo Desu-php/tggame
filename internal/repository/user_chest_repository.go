@@ -8,6 +8,7 @@ import (
 
 type UserChestRepository interface {
 	Create(userChest *models.UserChest) (*models.UserChest, error)
+	DecrementHealth(userChest *models.UserChest, damage uint) error
 }
 
 type userChestRepository struct {
@@ -26,4 +27,16 @@ func (r *userChestRepository) Create(userChest *models.UserChest) (*models.UserC
 	}
 
 	return userChest, nil
+}
+
+func (r *userChestRepository) DecrementHealth(userChest *models.UserChest, damage uint) error{
+	userChest.CurrentHealth = userChest.CurrentHealth - int(damage)
+
+	result := r.db.Save(userChest)
+
+	if result.Error != nil {
+		return fmt.Errorf("UserChestRepository::DecrementHealth: err %w", result.Error)
+	}
+
+	return nil
 }

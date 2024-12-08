@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"log"
-
-	"example.com/v2/internal/adapter"
+	"example.com/v2/internal/models"
 	"example.com/v2/internal/responses"
 	"example.com/v2/internal/services"
 	"github.com/gin-gonic/gin"
@@ -11,25 +9,21 @@ import (
 )
 
 type ClickStoreRequest struct {
-	UserID uint `json:"user_id" binding:"required"`
 	Count  uint `json:"count" binding:"required"`
 }
 
 type ClickController struct {
 	logger  *logrus.Logger
 	service *services.ClickService
-	cache   adapter.UserClickCacheAdapter
 }
 
 func NewClickController(
 	logger *logrus.Logger,
 	service *services.ClickService,
-	cache adapter.UserClickCacheAdapter,
 ) *ClickController {
 	return &ClickController{
 		logger:  logger,
 		service: service,
-		cache:   cache,
 	}
 }
 
@@ -41,19 +35,19 @@ func (cc *ClickController) Store(c *gin.Context) {
 		return
 	}
 
-	cc.service.Store(request.UserID, request.Count)
+	userData, exists := c.Get("user")
+	if !exists {
+		c.JSON(401, gin.H{"error": "User not found"})
+		return
+	}
+
+	user, ok := userData.(*models.User)
+	if !ok {
+		c.JSON(500, gin.H{"error": "Invalid user data"})
+		return
+	}
+
+	cc.service.Damage(user,request.Count)
 
 	responses.OkResponse(c, gin.H{"user": "Hello world!"})
-}
-
-func (cc *ClickController) Get(c *gin.Context) {
-
-	cc.cache.ChunkAll(5, func (data map[uint]uint) error  {
-		log.Println("len", len(data))
-		for userId, value := range data {
-			log.Println("value: ", userId, value)
-		}
-		return nil
-	})
-		responses.OkResponse(c, gin.H{"user": "Hello world!"})
 }

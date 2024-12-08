@@ -6,12 +6,13 @@ import (
 	"strings"
 
 	"example.com/v2/internal/adapter"
+	"example.com/v2/internal/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
 
-func SessionMiddleware(sessionCache adapter.UserSessionAdapter, logger *logrus.Logger) gin.HandlerFunc {
+func SessionMiddleware(sessionCache adapter.UserSessionAdapter, logger *logrus.Logger, userRepository repository.UserRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionHeader := c.GetHeader("x-session")
 		if sessionHeader == "" {
@@ -52,6 +53,21 @@ func SessionMiddleware(sessionCache adapter.UserSessionAdapter, logger *logrus.L
 			return
 		}
 
+		user, err := userRepository.FindWithoutPreloadingByTgId(tgId)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Server Error"})
+			c.Abort()
+			return
+		}
+
+		if user == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			c.Abort()
+			return
+		}
+
+		c.Set("user", user)
 		c.Next()
 	}
 }

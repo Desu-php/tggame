@@ -2,25 +2,47 @@ package services
 
 import (
 	"fmt"
-	"example.com/v2/internal/adapter"
+
+	"example.com/v2/internal/models"
+	"example.com/v2/internal/repository"
+	"example.com/v2/pkg/transaction"
 )
 
 type ClickService struct {
-	cache adapter.UserClickCacheAdapter
+	userChestRepository repository.UserChestRepository
+	transaction transaction.TransactionManager
 }
 
-func NewClickService(cache adapter.UserClickCacheAdapter) *ClickService {
+func NewClickService(
+	userChestRepository repository.UserChestRepository, 
+	transaction transaction.TransactionManager,
+	) *ClickService {
 	return &ClickService{
-		cache: cache,
+		userChestRepository: userChestRepository,
+		transaction: transaction,
 	}
 }
 
-func (s *ClickService) Store(userId uint, count uint) error {
-	err := s.cache.Increment(userId, count)
-
-	if err != nil {
-		return fmt.Errorf("ClickService::store %w", err)
+func (s *ClickService) Damage(user *models.User,count uint) error {
+	if user.UserChest.CurrentHealth <= 0 {
+		return nil
 	}
+
+	s.transaction.RunInTransaction(func() error {
+		err := s.userChestRepository.DecrementHealth(&user.UserChest, count)
+
+   	if err != nil {
+		return fmt.Errorf("ClickService::Damage %w", err)
+	}
+
+	if user.UserChest.CurrentHealth <= 0 {
+		
+	}
+
+	return nil	
+	})
+
+	
 
 	return nil
 }

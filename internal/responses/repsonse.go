@@ -14,3 +14,7 @@ func BadResponse(c *gin.Context, e error) {
 func OkResponse(c *gin.Context, obj any) {
 	c.JSON(http.StatusOK, obj)
 }
+
+func ServerErrorResponse(c *gin.Context, obj any) {
+	c.JSON(http.StatusInternalServerError, obj)
+}

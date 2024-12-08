@@ -26,4 +26,5 @@ var Module = fx.Provide(
 	NewUserRepository,
 	NewChestRespository,
 	NewUserChestRepository,
+	NewUserChestHistoryRepository,
 )

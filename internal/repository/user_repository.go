@@ -14,6 +14,7 @@ type UserRepository interface {
 	GetAll() ([]models.User, error)
 	FindByTgId(id uint64) (*models.User, error)
 	UpdateSession(user *models.User, session string) error
+	FindWithoutPreloadingByTgId(id uint64) (*models.User, error)
 }
 
 type userRepository struct {
@@ -75,6 +76,21 @@ func (r *userRepository) FindByTgId(id uint64) (*models.User, error) {
 
 	if result.Error != nil {
 		return nil, fmt.Errorf("FindByTgId: err %w", result.Error)
+	}
+
+	return &user, nil
+}
+
+func (r *userRepository) FindWithoutPreloadingByTgId(id uint64) (*models.User, error) {
+	var user models.User
+
+	result := r.db.First(&user, "telegram_id = ?", id)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if result.Error != nil {
+		return nil, fmt.Errorf("FindWithoutPreloadingByTgId: err %w", result.Error)
 	}
 
 	return &user, nil
