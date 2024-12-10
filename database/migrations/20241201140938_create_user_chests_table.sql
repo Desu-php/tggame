@@ -7,8 +7,8 @@ CREATE TABLE user_chests (
     health INTEGER NOT NULL,             -- Здоровье сундука
     current_health INTEGER NOT NULL,     -- Текущее здоровье сундука
     level INTEGER NOT NULL,             -- Текущий уровень сундука
-    created_at TIMESTAMP DEFAULT NOW(),  -- Дата создания записи
-    updated_at TIMESTAMP DEFAULT NOW(),  -- Дата обновления записи
+    created_at TIMESTAMP,  -- Дата создания записи
+    updated_at TIMESTAMP,  -- Дата обновления записи
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (chest_id) REFERENCES chests (id) ON DELETE CASCADE
 );
