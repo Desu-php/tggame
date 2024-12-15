@@ -10,6 +10,8 @@ services:
       - redis
     env_file:
       - .env
+    networks:
+      - mynetwork
 
   db:
     image: postgres:15
@@ -22,6 +24,8 @@ services:
       - 5432:5432
     volumes:
       - db:/var/lib/postgresql/data/
+    networks:
+      - mynetwork
 
   redis:
     image: redis:latest
@@ -32,7 +36,13 @@ services:
     volumes:
       - redis:/data  # Для постоянства данных Redis
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    networks:
+      - mynetwork
 
 volumes:
   db:
   redis:
+
+networks:
+  mynetwork:
+    driver: bridge
