@@ -29,13 +29,13 @@ func RegisterRoutes(
 		game.POST("/start", gameController.Start)
 	}
 
+	r.GET("api/test", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK,  gin.H{"Success": true})
+	})
+
 	api := r.Group("/api")
 	api.Use(middleware.SessionMiddleware(sessionAdapter, logger, userRepository))
 	{
-		api.GET("/test", func(ctx *gin.Context) {
-			ctx.JSON(http.StatusOK,  gin.H{"Success": true})
-		})
-
 		api.POST("click", clickController.Store)
 
 		api.GET("user/item/last", userItemController.GetLast)

@@ -11,7 +11,9 @@ COPY . .
 
 RUN go build -o main ./cmd/main.go
 
-EXPOSE 8080
+ENV PORT=8080
+
+EXPOSE ${PORT}
 
 # Start the application
 CMD ["./main"]
