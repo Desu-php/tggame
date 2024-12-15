@@ -78,7 +78,7 @@ func StartServer(router *gin.Engine, cfg *config.Config) {
 		router.Use(cors.New(config))
 
 		log.Printf("Starting server on port %s", cfg.AppPort)
-		if err := router.Run("localhost:" + cfg.AppPort); err != nil {
+		if err := router.Run("0.0.0.0:" + cfg.AppPort); err != nil {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()
