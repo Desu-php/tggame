@@ -13,7 +13,7 @@ type Config struct {
 	AppEnv   string
 	AppPort  string
 	Database *Database
-	Redis *Redis
+	Redis    *Redis
 	Telegram *Telegram
 }
 
@@ -26,8 +26,8 @@ type Database struct {
 }
 
 type Redis struct {
-	Host string
-	Port string
+	Host     string
+	Port     string
 	Password string
 }
 
@@ -53,8 +53,8 @@ func LoadConfig() *Config {
 			Passord: os.Getenv("DB_PASSWORD"),
 		},
 		Redis: &Redis{
-			Host: os.Getenv("REDIS_HOST"),
-			Port: os.Getenv("REDIS_PORT"),
+			Host:     os.Getenv("REDIS_HOST"),
+			Port:     os.Getenv("REDIS_PORT"),
 			Password: os.Getenv("REDIS_PASSWORD"),
 		},
 		Telegram: &Telegram{
@@ -65,4 +65,8 @@ func LoadConfig() *Config {
 	fmt.Println(cfg)
 
 	return cfg
+}
+
+func (c *Config) IsProduction() bool {
+	return c.AppEnv == "Production"
 }

@@ -20,6 +20,7 @@ func RegisterRoutes(
 	clickController *controllers.ClickController,
 	userRepository repository.UserRepository,
 	cfg *config.Config,
+	userItemController *controllers.UserItemController,
 	) {
 		
 	game := r.Group("/api/game")
@@ -36,5 +37,8 @@ func RegisterRoutes(
 		})
 
 		api.POST("click", clickController.Store)
+
+		api.GET("user/item/last", userItemController.GetLast)
+		api.GET("user/items", userItemController.GetUserItems)
 	}
 }

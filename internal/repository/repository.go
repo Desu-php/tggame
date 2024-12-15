@@ -29,4 +29,5 @@ var Module = fx.Provide(
 	NewUserChestHistoryRepository,
 	itemService.NewItemRepository,
 	itemService.NewRarityRepository,
+	NewUserItemRepository,
 )

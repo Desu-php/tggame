@@ -9,7 +9,7 @@ import (
 )
 
 type ClickStoreRequest struct {
-	Count  uint `json:"count" binding:"required"`
+	Count uint `json:"count" binding:"required"`
 }
 
 type ClickController struct {
@@ -47,7 +47,13 @@ func (cc *ClickController) Store(c *gin.Context) {
 		return
 	}
 
-	cc.service.Damage(user,request.Count)
+	err := cc.service.Damage(user, request.Count)
 
-	responses.OkResponse(c, gin.H{"user": "Hello world!"})
+	if err != nil {
+		cc.logger.WithError(err).Error("ClickController::store")
+		responses.ServerErrorResponse(c, gin.H{"error": "Server error"})
+		return
+	}
+
+	responses.OkResponse(c, gin.H{"user_chest": user.UserChest})
 }

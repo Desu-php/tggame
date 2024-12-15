@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"math"
 
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/repository"
@@ -15,6 +16,7 @@ type UserChestService struct {
 	transaction          transaction.TransactionManager
 	userChestHistoryRepo repository.UserChestHistoryRepository
 	itemService          *services.ItemService
+	userItemService      *UserItemService
 }
 
 func NewUserChestService(
@@ -23,6 +25,7 @@ func NewUserChestService(
 	transaction transaction.TransactionManager,
 	userChestHistoryRepo repository.UserChestHistoryRepository,
 	itemService *services.ItemService,
+	userItemService *UserItemService,
 ) *UserChestService {
 	return &UserChestService{
 		userChestRepo:        userChestRepo,
@@ -30,6 +33,7 @@ func NewUserChestService(
 		transaction:          transaction,
 		userChestHistoryRepo: userChestHistoryRepo,
 		itemService:          itemService,
+		userItemService:      userItemService,
 	}
 }
 
@@ -48,21 +52,22 @@ func (s *UserChestService) Create(user *models.User) (*models.UserChest, error) 
 		UserID:        user.ID,
 		ChestID:       chest.ID,
 		CurrentHealth: chest.Health,
+		Health:        uint(chest.Health),
 		Level:         1,
 	})
+
+	userChest.Chest = *chest
 
 	if err != nil {
 		return nil, fmt.Errorf("UserChestService::Create err %w", err)
 	}
 
-	userChest.Chest = *chest
-
 	return userChest, nil
 }
 
-func (s *UserChestService) LevelUp(userChest *models.UserChest) (*models.UserChest, error) {
+func (s *UserChestService) LevelUp(userChest *models.UserChest) error {
 	s.transaction.RunInTransaction(func() error {
-		_, err := s.userChestHistoryRepo.Create(userChest)
+		userChestHistory, err := s.userChestHistoryRepo.Create(userChest)
 
 		if err != nil {
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
@@ -74,5 +79,36 @@ func (s *UserChestService) LevelUp(userChest *models.UserChest) (*models.UserChe
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
 		}
 
+		_, err = s.userItemService.SetUserItem(userChest.UserID, item, userChestHistory)
+
+		if err != nil {
+			return fmt.Errorf("UserChestService::LevelUp %w", err)
+		}
+
+		s.Upgrade(userChest)
+
+		return nil
 	})
+
+	return nil
+}
+
+func (s *UserChestService) Upgrade(uc *models.UserChest) error {
+	s.IncreaseHealth(uc)
+	
+	uc.CurrentHealth = int(uc.Health)
+	uc.Level++
+
+	err := s.userChestRepo.Update(uc)
+
+	if err != nil {
+		return fmt.Errorf("UserChestService::Upgrade %w", err)
+	}
+
+	return nil
+}
+
+func (s *UserChestService) IncreaseHealth(uc *models.UserChest) {
+	increase := float64(uc.Health) * (uc.Chest.GrowthFactor / 100)
+	uc.Health = uint(math.Round(float64(uc.Health) + increase))
 }

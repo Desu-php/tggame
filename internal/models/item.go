@@ -7,6 +7,7 @@ import (
 type Item struct {
 	ID          uint      `gorm:"primaryKey" json:"id"`
 	Name        string    `gorm:"type:varchar(50);not null" json:"name"`
+	Image       string    `gorm:"type:varchar(250);not null" json:"image"`
 	TypeID      uint      `gorm:"not null" json:"type_id"`
 	RarityID    uint      `gorm:"not null" json:"rarity_id"`
 	Description string    `gorm:"not null" json:"description"`

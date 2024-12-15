@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log"
 
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/repository"
@@ -47,6 +48,8 @@ func (u *UserService) FirstOrCreateByTgId(dto *dto.GameStartDto) (*models.User, 
 		}
 
 		userChest, err := u.userChestService.Create(user)
+
+		log.Println(userChest)
 
 		if err != nil {
 			return fmt.Errorf("FirstOrCreateByTgId: err %w", err)

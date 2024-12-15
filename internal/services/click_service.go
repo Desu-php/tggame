@@ -10,39 +10,53 @@ import (
 
 type ClickService struct {
 	userChestRepository repository.UserChestRepository
-	transaction transaction.TransactionManager
+	transaction         transaction.TransactionManager
+	userChestService    *UserChestService
 }
 
 func NewClickService(
-	userChestRepository repository.UserChestRepository, 
+	userChestRepository repository.UserChestRepository,
 	transaction transaction.TransactionManager,
-	) *ClickService {
+	userChestService *UserChestService,
+) *ClickService {
 	return &ClickService{
 		userChestRepository: userChestRepository,
-		transaction: transaction,
+		transaction:         transaction,
+		userChestService:    userChestService,
 	}
 }
 
-func (s *ClickService) Damage(user *models.User,count uint) error {
-	if user.UserChest.CurrentHealth <= 0 {
+func (s *ClickService) Damage(user *models.User, count uint) error {
+
+	userChest, err := s.userChestRepository.FindByUser(user)
+
+	if err != nil {
+		return fmt.Errorf("ClickService::Damage %w", err)
+	}
+
+	user.UserChest = *userChest
+
+	if userChest.CurrentHealth <= 0 {
 		return nil
 	}
 
 	s.transaction.RunInTransaction(func() error {
 		err := s.userChestRepository.DecrementHealth(&user.UserChest, count)
 
-   	if err != nil {
-		return fmt.Errorf("ClickService::Damage %w", err)
-	}
+		if err != nil {
+			return fmt.Errorf("ClickService::Damage %w", err)
+		}
 
-	if user.UserChest.CurrentHealth <= 0 {
-		
-	}
+		if user.UserChest.CurrentHealth <= 0 {
+			err = s.userChestService.LevelUp(&user.UserChest)
 
-	return nil	
+			if err != nil {
+				return fmt.Errorf("ClickService::Damage %w", err)
+			}
+		}
+
+		return nil
 	})
-
-	
 
 	return nil
 }
