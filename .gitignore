@@ -39,3 +39,5 @@ logs/
 # Конфиденциальные файлы
 config/*.secret.json
 config/*.secret.yml
+
+certmagic-storage/

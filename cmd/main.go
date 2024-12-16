@@ -16,6 +16,7 @@ import (
 	"example.com/v2/internal/services"
 	"example.com/v2/pkg"
 	"example.com/v2/routes"
+	"github.com/caddyserver/certmagic"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
@@ -35,7 +36,7 @@ func main() {
 		pkg.Module,
 		fx.Invoke(routes.RegisterRoutes),
 		fx.Invoke(StartServer),
-		fx.Invoke(func ()  {
+		fx.Invoke(func() {
 			go processClicks()
 		}),
 	)
@@ -67,19 +68,34 @@ func NewGinEngine() *gin.Engine {
 func StartServer(router *gin.Engine, cfg *config.Config) {
 	go func() {
 		config := cors.Config{
-			AllowOrigins:     []string{"*"}, // Разрешённый домен
-			AllowMethods:     []string{"*"}, // Разрешённые методы
-			AllowHeaders:     []string{"*"}, // Разрешённые заголовки
-			ExposeHeaders:    []string{"*"},          // Заголовки, доступные клиенту
-			AllowCredentials: true,                                               // Для запросов с куками
-			MaxAge:           12 * time.Hour,                                     // Время кеширования CORS-политики
+			AllowOrigins:     []string{"*"},  // Разрешённый домен
+			AllowMethods:     []string{"*"},  // Разрешённые методы
+			AllowHeaders:     []string{"*"},  // Разрешённые заголовки
+			ExposeHeaders:    []string{"*"},  // Заголовки, доступные клиенту
+			AllowCredentials: true,           // Для запросов с куками
+			MaxAge:           12 * time.Hour, // Время кеширования CORS-политики
 		}
 
 		router.Use(cors.New(config))
 
 		log.Printf("Starting server on port %s", cfg.AppPort)
-		if err := router.Run("0.0.0.0:" + cfg.AppPort); err != nil {
-			log.Fatalf("Failed to start server: %v", err)
+
+		if cfg.IsProduction() {
+			certmagic.DefaultACME.Agreed = true                          
+			certmagic.DefaultACME.Email = cfg.AppEmail
+			certmagic.DefaultACME.CA = certmagic.LetsEncryptStagingCA
+			certmagic.Default.Storage = &certmagic.FileStorage{Path: "./certmagic-storage"}
+
+			domains := []string{cfg.AppDomain}
+
+			err := certmagic.HTTPS(domains, router)
+			if err != nil {
+				log.Fatalf("Failed to start HTTPS server: %v", err)
+			}
+		}else {
+			if err := router.Run("0.0.0.0:" + cfg.AppPort); err != nil {
+				log.Fatalf("Failed to start server: %v", err)
+			}
 		}
 	}()
 }
