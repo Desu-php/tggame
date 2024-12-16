@@ -68,8 +68,8 @@ func NewGinEngine() *gin.Engine {
 func StartServer(router *gin.Engine, cfg *config.Config) {
 	go func() {
 		config := cors.Config{
-			AllowOrigins:     []string{"*"},  // Разрешённый домен
-			AllowMethods:     []string{"*"},  // Разрешённые методы
+			AllowOrigins:     []string{cfg.AppFrontUrl},  // Разрешённый домен
+			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 			AllowHeaders:     []string{"*"},  // Разрешённые заголовки
 			ExposeHeaders:    []string{"*"},  // Заголовки, доступные клиенту
 			AllowCredentials: true,           // Для запросов с куками

@@ -9,14 +9,15 @@ import (
 )
 
 type Config struct {
-	AppName   string
-	AppEnv    string
-	AppPort   string
-	AppDomain string
-	AppEmail  string
-	Database  *Database
-	Redis     *Redis
-	Telegram  *Telegram
+	AppName     string
+	AppEnv      string
+	AppPort     string
+	AppDomain   string
+	AppEmail    string
+	AppFrontUrl string
+	Database    *Database
+	Redis       *Redis
+	Telegram    *Telegram
 }
 
 type Database struct {
@@ -44,11 +45,12 @@ func LoadConfig() *Config {
 	}
 
 	cfg := &Config{
-		AppName:   os.Getenv("APP_NAME"),
-		AppEnv:    os.Getenv("APP_ENV"),
-		AppPort:   os.Getenv("APP_PORT"),
-		AppDomain: os.Getenv("APP_DOMAIN"),
-		AppEmail:  os.Getenv("APP_EMAIL"),
+		AppName:     os.Getenv("APP_NAME"),
+		AppEnv:      os.Getenv("APP_ENV"),
+		AppPort:     os.Getenv("APP_PORT"),
+		AppDomain:   os.Getenv("APP_DOMAIN"),
+		AppEmail:    os.Getenv("APP_EMAIL"),
+		AppFrontUrl: os.Getenv("APP_FRONT_URL"),
 		Database: &Database{
 			Host:    os.Getenv("DB_HOST"),
 			Port:    os.Getenv("DB_PORT"),
