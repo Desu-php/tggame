@@ -78,10 +78,16 @@ func NewGinEngine(cfg *config.Config) *gin.Engine {
 
 func StartServer(router *gin.Engine, cfg *config.Config) {
 	go func() {
-		if cfg.IsProduction() {
+		if cfg.IsProduction() || cfg.IsStage() {
 			certmagic.DefaultACME.Agreed = true
 			certmagic.DefaultACME.Email = cfg.AppEmail
-			certmagic.DefaultACME.CA = certmagic.LetsEncryptStagingCA
+
+			if cfg.IsProduction() {
+				certmagic.DefaultACME.CA = certmagic.LetsEncryptProductionCA
+			} else {
+				certmagic.DefaultACME.CA = certmagic.LetsEncryptStagingCA
+			}
+
 			certmagic.Default.Storage = &certmagic.FileStorage{Path: "./certmagic-storage"}
 
 			domains := []string{cfg.AppDomain}

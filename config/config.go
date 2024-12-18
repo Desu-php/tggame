@@ -76,3 +76,7 @@ func LoadConfig() *Config {
 func (c *Config) IsProduction() bool {
 	return c.AppEnv == "production"
 }
+
+func (c *Config) IsStage() bool {
+	return c.AppEnv == "stage"
+}
