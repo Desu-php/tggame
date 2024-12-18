@@ -14,7 +14,7 @@ services:
     networks:
       - mynetwork
     volumes:
-      - ./certmagic-storage:/certmagic-storage  # Монтируем папку для хранения сертификатов
+      - ./certmagic-storage:/app/certmagic-storage  # Монтируем папку для хранения сертификатов
 
   db:
     image: postgres:15
