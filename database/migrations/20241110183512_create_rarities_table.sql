@@ -3,6 +3,7 @@
 CREATE TABLE rarities (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
+    color VARCHAR(255) NOT NULL,
     drop_weight INTEGER NOT NULL,
     description TEXT,
     created_at TIMESTAMP,

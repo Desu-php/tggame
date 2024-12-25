@@ -9,6 +9,8 @@ CREATE TABLE user_chest_histories (
     updated_at TIMESTAMP,  -- Дата обновления записи
     FOREIGN KEY (user_chest_id) REFERENCES user_chests (id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_user_chest_histories_user_chest_id ON user_chest_histories (user_chest_id);
 -- +goose StatementEnd
 
 -- +goose Down
