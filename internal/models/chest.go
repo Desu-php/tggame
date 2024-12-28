@@ -16,4 +16,5 @@ type Chest struct {
 	StartLevel   uint      `gorm:"not null" json:"start_level"`
 	EndLevel     uint      `gorm:"not null" json:"end_level"`
 	Rarity       Rarity    `gorm:"foreignKey:RarityID" json:"rarity"`
+	Image        string    `gorm:"type:varchar(255);not null" json:"image"`
 }
