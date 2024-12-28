@@ -11,4 +11,6 @@ type Rarity struct {
 	Description string    `gorm:"not null" json:"description"`           // Является ли сундук по умолчанию
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`      // Время создания
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`      // Время обновления
+	Color       string    `gorm:"type:varchar(255);not null" json:"color"`
+	Sort        int       `gorm:"not null" json:"sort"`
 }
