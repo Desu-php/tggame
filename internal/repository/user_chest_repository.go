@@ -53,7 +53,7 @@ func (r *userChestRepository) Update(userChest *models.UserChest) error {
 	return nil
 }
 
-func (r userChestRepository) FindByUser(user *models.User) (*models.UserChest, error) {
+func (r *userChestRepository) FindByUser(user *models.User) (*models.UserChest, error) {
 	var userChest models.UserChest
 
 	result := r.db.Preload("Chest").First(&userChest, "user_id = ?", user.ID)
