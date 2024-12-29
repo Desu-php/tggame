@@ -11,5 +11,10 @@ type Chest struct {
 	IsDefault    bool      `gorm:"not null" json:"is_default"`                      // Является ли сундук по умолчанию
 	GrowthFactor float64   `gorm:"type:numeric(5,2);not null" json:"growth_factor"` // Коэффициент роста
 	CreatedAt    time.Time `gorm:"autoCreateTime" json:"created_at"`                // Время создания
-	UpdatedAt    time.Time `gorm:"autoUpdateTime" json:"updated_at"`                // Время обновления
+	UpdatedAt    time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+	RarityID     uint      `gorm:"not null" json:"rarity_id"`
+	StartLevel   uint      `gorm:"not null" json:"start_level"`
+	EndLevel     uint      `gorm:"not null" json:"end_level"`
+	Rarity       Rarity    `gorm:"foreignKey:RarityID" json:"rarity"`
+	Image        string    `gorm:"type:varchar(255);not null" json:"image"`
 }

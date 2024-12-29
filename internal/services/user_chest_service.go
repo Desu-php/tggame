@@ -66,7 +66,7 @@ func (s *UserChestService) Create(user *models.User) (*models.UserChest, error) 
 }
 
 func (s *UserChestService) LevelUp(userChest *models.UserChest) error {
-	s.transaction.RunInTransaction(func() error {
+	err := s.transaction.RunInTransaction(func() error {
 		userChestHistory, err := s.userChestHistoryRepo.Create(userChest)
 
 		if err != nil {
@@ -85,21 +85,37 @@ func (s *UserChestService) LevelUp(userChest *models.UserChest) error {
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
 		}
 
-		s.Upgrade(userChest)
+		err = s.Upgrade(userChest)
+
+		if err != nil {
+			return fmt.Errorf("UserChestService::LevelUp %w", err)
+		}
 
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (s *UserChestService) Upgrade(uc *models.UserChest) error {
 	s.IncreaseHealth(uc)
-	
+
 	uc.CurrentHealth = int(uc.Health)
 	uc.Level++
 
-	err := s.userChestRepo.Update(uc)
+	nextChest, err := s.chestRepo.GetNextChest(uint(uc.Level))
+
+	if err != nil {
+		return fmt.Errorf("UserChestService::Upgrade err %w", err)
+	}
+
+	uc.ChestID = nextChest.ID
+
+	err = s.userChestRepo.Update(uc)
 
 	if err != nil {
 		return fmt.Errorf("UserChestService::Upgrade %w", err)

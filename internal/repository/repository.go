@@ -24,7 +24,7 @@ var Module = fx.Provide(
 	NewGORMInstance,
 	NewBaseRepository,
 	NewUserRepository,
-	NewChestRespository,
+	NewChestRepository,
 	NewUserChestRepository,
 	NewUserChestHistoryRepository,
 	itemService.NewItemRepository,
