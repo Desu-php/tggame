@@ -44,7 +44,11 @@ func (r *userChestRepository) DecrementHealth(userChest *models.UserChest, damag
 }
 
 func (r *userChestRepository) Update(userChest *models.UserChest) error {
-	result := r.db.Save(userChest)
+	result := r.db.Model(userChest).Updates(map[string]interface{}{
+		"ChestID":       userChest.ChestID,
+		"Health":        userChest.Health,
+		"CurrentHealth": userChest.CurrentHealth,
+	})
 
 	if result.Error != nil {
 		return fmt.Errorf("UserChestRepository::Update: err %w", result.Error)

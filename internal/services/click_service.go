@@ -36,10 +36,6 @@ func (s *ClickService) Damage(user *models.User, count uint) error {
 
 	user.UserChest = *userChest
 
-	if userChest.CurrentHealth <= 0 {
-		return nil
-	}
-
 	err = s.transaction.RunInTransaction(func() error {
 		err := s.userChestRepository.DecrementHealth(&user.UserChest, count)
 

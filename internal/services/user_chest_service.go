@@ -102,9 +102,6 @@ func (s *UserChestService) LevelUp(userChest *models.UserChest) error {
 }
 
 func (s *UserChestService) Upgrade(uc *models.UserChest) error {
-	s.IncreaseHealth(uc)
-
-	uc.CurrentHealth = int(uc.Health)
 	uc.Level++
 
 	nextChest, err := s.chestRepo.GetNextChest(uint(uc.Level))
@@ -113,7 +110,14 @@ func (s *UserChestService) Upgrade(uc *models.UserChest) error {
 		return fmt.Errorf("UserChestService::Upgrade err %w", err)
 	}
 
-	uc.ChestID = nextChest.ID
+	if nextChest.ID != uc.ChestID {
+		uc.Health = uint(nextChest.Health)
+		uc.ChestID = nextChest.ID
+	} else {
+		s.IncreaseHealth(uc)
+	}
+
+	uc.CurrentHealth = int(uc.Health)
 
 	err = s.userChestRepo.Update(uc)
 
