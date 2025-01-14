@@ -22,11 +22,11 @@ type Config struct {
 }
 
 type Database struct {
-	Host    string
-	Port    string
-	Name    string
-	User    string
-	Passord string
+	Host     string
+	Port     string
+	Name     string
+	User     string
+	Password string
 }
 
 type Redis struct {
@@ -58,11 +58,11 @@ func LoadConfig() *Config {
 		AppEmail:    os.Getenv("APP_EMAIL"),
 		AppFrontUrl: os.Getenv("APP_FRONT_URL"),
 		Database: &Database{
-			Host:    os.Getenv("DB_HOST"),
-			Port:    os.Getenv("DB_PORT"),
-			Name:    os.Getenv("DB_DATABASE"),
-			User:    os.Getenv("DB_USERNAME"),
-			Passord: os.Getenv("DB_PASSWORD"),
+			Host:     os.Getenv("DB_HOST"),
+			Port:     os.Getenv("DB_PORT"),
+			Name:     os.Getenv("DB_DATABASE"),
+			User:     os.Getenv("DB_USERNAME"),
+			Password: os.Getenv("DB_PASSWORD"),
 		},
 		Redis: &Redis{
 			Host:     os.Getenv("REDIS_HOST"),
@@ -73,7 +73,7 @@ func LoadConfig() *Config {
 			Token: os.Getenv("TELEGRAM_BOT_TOKEN"),
 		},
 		Aws: &Aws{
-			Bucket: os.Getenv("AWS_BUCKET"),
+			Bucket:   os.Getenv("AWS_BUCKET"),
 			Endpoint: os.Getenv("AWS_ENDPOINT"),
 		},
 	}

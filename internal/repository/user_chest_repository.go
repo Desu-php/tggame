@@ -4,6 +4,7 @@ import (
 	"example.com/v2/internal/models"
 	"fmt"
 	"gorm.io/gorm"
+	"log"
 )
 
 type UserChestRepository interface {
@@ -44,13 +45,16 @@ func (r *userChestRepository) DecrementHealth(userChest *models.UserChest, damag
 }
 
 func (r *userChestRepository) Update(userChest *models.UserChest) error {
-	result := r.db.Model(userChest).Updates(map[string]interface{}{
-		"ChestID":       userChest.ChestID,
-		"Health":        userChest.Health,
-		"CurrentHealth": userChest.CurrentHealth,
+	result := r.db.Updates(&models.UserChest{
+		ID:            userChest.ID,
+		ChestID:       userChest.ChestID,
+		Level:         userChest.Level,
+		CurrentHealth: userChest.CurrentHealth,
+		Health:        userChest.Health,
 	})
 
 	if result.Error != nil {
+		log.Printf("Update error: %s", result.Error)
 		return fmt.Errorf("UserChestRepository::Update: err %w", result.Error)
 	}
 

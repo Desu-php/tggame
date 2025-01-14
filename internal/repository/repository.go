@@ -12,7 +12,7 @@ import (
 func NewGORMInstance(cfg *config.Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.Database.User,
-		cfg.Database.Passord,
+		cfg.Database.Password,
 		cfg.Database.Host,
 		cfg.Database.Port,
 		cfg.Database.Name,
