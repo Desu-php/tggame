@@ -18,6 +18,7 @@ type Config struct {
 	Database    *Database
 	Redis       *Redis
 	Telegram    *Telegram
+	Aws         *Aws
 }
 
 type Database struct {
@@ -36,6 +37,11 @@ type Redis struct {
 
 type Telegram struct {
 	Token string
+}
+
+type Aws struct {
+	Bucket   string
+	Endpoint string
 }
 
 func LoadConfig() *Config {
@@ -65,6 +71,10 @@ func LoadConfig() *Config {
 		},
 		Telegram: &Telegram{
 			Token: os.Getenv("TELEGRAM_BOT_TOKEN"),
+		},
+		Aws: &Aws{
+			Bucket: os.Getenv("AWS_BUCKET"),
+			Endpoint: os.Getenv("AWS_ENDPOINT"),
 		},
 	}
 
