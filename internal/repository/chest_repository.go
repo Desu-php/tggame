@@ -42,12 +42,16 @@ func (r *chestRepository) GetNextChest(currentLevel uint) (*models.Chest, error)
 	var chest models.Chest
 
 	result := r.db.Model(&models.Chest{}).
+		Preload("Rarity").
 		Where("start_level <= ?", currentLevel).
 		Where("end_level >= ?", currentLevel).
 		First(&chest)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		result = r.db.Model(&models.Chest{}).Order("end_level desc").First(&chest)
+		result = r.db.Model(&models.Chest{}).
+			Preload("Rarity").
+			Order("end_level desc").
+			First(&chest)
 
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, nil

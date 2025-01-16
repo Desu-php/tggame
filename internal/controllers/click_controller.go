@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"example.com/v2/internal/http/resources"
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/responses"
 	"example.com/v2/internal/services"
+	"example.com/v2/pkg/image"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -15,15 +17,18 @@ type ClickStoreRequest struct {
 type ClickController struct {
 	logger  *logrus.Logger
 	service *services.ClickService
+	image   *image.Image
 }
 
 func NewClickController(
 	logger *logrus.Logger,
 	service *services.ClickService,
+	image *image.Image,
 ) *ClickController {
 	return &ClickController{
 		logger:  logger,
 		service: service,
+		image:   image,
 	}
 }
 
@@ -55,5 +60,7 @@ func (cc *ClickController) Store(c *gin.Context) {
 		return
 	}
 
-	responses.OkResponse(c, gin.H{"user_chest": user.UserChest})
+	responses.OkResponse(c, gin.H{
+		"data": resources.NewBaseResource(resources.NewUserChestResource(cc.image)).One(&user.UserChest),
+	})
 }

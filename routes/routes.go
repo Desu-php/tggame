@@ -21,8 +21,9 @@ func RegisterRoutes(
 	userRepository repository.UserRepository,
 	cfg *config.Config,
 	userItemController *controllers.UserItemController,
-	) {
-		
+	rarityController *controllers.RarityController,
+) {
+
 	game := r.Group("/api/game")
 	{
 		game.Use(middleware.TelegramHashCheck(cfg))
@@ -30,10 +31,13 @@ func RegisterRoutes(
 	}
 
 	r.GET("api/test", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK,  gin.H{"Success": true})
+		ctx.JSON(http.StatusOK, gin.H{"Success": true})
 	})
 
 	api := r.Group("/api")
+
+	api.GET("rarities", rarityController.GetRarities)
+
 	api.Use(middleware.SessionMiddleware(sessionAdapter, logger, userRepository))
 	{
 		api.POST("click", clickController.Store)

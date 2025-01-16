@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"example.com/v2/internal/http/resources"
+	"example.com/v2/pkg/image"
 	"net/http"
 
 	"example.com/v2/internal/responses"
@@ -13,12 +15,14 @@ import (
 type GameController struct {
 	service *services.GameService
 	logger  *logrus.Logger
+	image   *image.Image
 }
 
-func NewGameController(service *services.GameService, logger *logrus.Logger) *GameController {
+func NewGameController(service *services.GameService, logger *logrus.Logger, image *image.Image) *GameController {
 	return &GameController{
 		service: service,
 		logger:  logger,
+		image:   image,
 	}
 }
 
@@ -40,5 +44,5 @@ func (gc *GameController) Start(c *gin.Context) {
 		return
 	}
 
-	responses.OkResponse(c, gin.H{"user": user})
+	responses.OkResponse(c, gin.H{"user": resources.NewUserResource(gc.image).Map(user)})
 }

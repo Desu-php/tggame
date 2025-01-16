@@ -69,7 +69,7 @@ func (r *userRepository) GetAll() ([]models.User, error) {
 func (r *userRepository) FindByTgId(id uint64) (*models.User, error) {
 	var user models.User
 
-	result := r.db.Preload("UserChest.Chest").First(&user, "telegram_id = ?", id)
+	result := r.db.Preload("UserChest.Chest.Rarity").First(&user, "telegram_id = ?", id)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -98,10 +98,10 @@ func (r *userRepository) FindWithoutPreloadingByTgId(id uint64) (*models.User, e
 
 func (r *userRepository) UpdateSession(user *models.User, session string) error {
 	result := r.db.Model(&user).Update("session", session)
-	
+
 	if result.Error != nil {
 		return fmt.Errorf("UpdateSession: err %w", result.Error)
 	}
-	
+
 	return nil
 }

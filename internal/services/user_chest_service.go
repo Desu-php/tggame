@@ -113,6 +113,7 @@ func (s *UserChestService) Upgrade(uc *models.UserChest) error {
 	if nextChest.ID != uc.ChestID {
 		uc.Health = uint(nextChest.Health)
 		uc.ChestID = nextChest.ID
+		uc.Chest = *nextChest
 	} else {
 		s.IncreaseHealth(uc)
 	}

@@ -1,21 +1,21 @@
 package image
 
 import (
+	"example.com/v2/config"
 	"fmt"
 	"strings"
-	"example.com/v2/config"
 )
 
 type Image struct {
-	aws *config.Aws
+	aws *config.Config
 	url string
 }
 
 func NewImage(
-	aws *config.Aws,
+	aws *config.Config,
 ) (*Image, error) {
 
-	url, err := generateCustomURL(aws.Bucket, aws.Endpoint)
+	url, err := generateCustomURL(aws.Aws.Bucket, aws.Aws.Endpoint)
 
 	if err != nil {
 		return nil, fmt.Errorf("NewImage err %w", err)
