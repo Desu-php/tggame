@@ -61,3 +61,8 @@ type GroupedUserItemResponse struct {
 	Rarity string `json:"rarity"`
 	Image  string `json:"image"`
 }
+
+type ReferralUserResponse struct {
+	Username  string    `json:"username"`
+	CreatedAt time.Time `json:"created_at"`
+}

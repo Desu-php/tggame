@@ -22,6 +22,7 @@ func RegisterRoutes(
 	cfg *config.Config,
 	userItemController *controllers.UserItemController,
 	rarityController *controllers.RarityController,
+	referralController *controllers.ReferralController,
 ) {
 
 	game := r.Group("/api/game")
@@ -44,5 +45,6 @@ func RegisterRoutes(
 
 		api.GET("user/item/last", userItemController.GetLast)
 		api.GET("user/items", userItemController.GetUserItems)
+		api.GET("user/referrals", referralController.GetReferrals)
 	}
 }

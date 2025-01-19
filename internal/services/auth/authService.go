@@ -7,22 +7,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AuthService struct {}
+type AuthService struct{}
 
-func NewAuthService(c *gin.Context)*AuthService {
+func NewAuthService() *AuthService {
 	return &AuthService{}
 }
 
-func (s *AuthService) GetUser(c *gin.Context) (*models.User, error){
+func (s *AuthService) GetUser(c *gin.Context) (*models.User, error) {
 	userData, exists := c.Get("user")
 
 	if !exists {
-		return nil,fmt.Errorf("AuthService::GetUser User not found")
+		return nil, fmt.Errorf("AuthService::GetUser User not found")
 	}
 
 	user, ok := userData.(*models.User)
 	if !ok {
-		return nil,fmt.Errorf("AuthService::GetUser User data is invalid")
+		return nil, fmt.Errorf("AuthService::GetUser User data is invalid")
 	}
 
 	return user, nil

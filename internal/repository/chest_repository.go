@@ -25,7 +25,7 @@ func NewChestRepository(db *gorm.DB) ChestRepository {
 func (r *chestRepository) GetDefault() (*models.Chest, error) {
 	var chest models.Chest
 
-	result := r.db.Where(&models.Chest{IsDefault: true}).First(&chest)
+	result := r.db.Preload("Rarity").Where(&models.Chest{IsDefault: true}).First(&chest)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
