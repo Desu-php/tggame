@@ -31,4 +31,5 @@ var Module = fx.Provide(
 	itemService.NewRarityRepository,
 	NewUserItemRepository,
 	NewReferralUserRepository,
+	NewUserStatRepository,
 )

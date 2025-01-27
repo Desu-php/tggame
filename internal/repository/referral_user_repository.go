@@ -10,6 +10,7 @@ import (
 type ReferralUserRepository interface {
 	GetByUserID(userID uint) ([]models.ReferralUser, error)
 	Create(referralUserID uint, userID uint) error
+	Count(userID uint) (uint, error)
 }
 
 type referralUserRepository struct {
@@ -50,4 +51,19 @@ func (r *referralUserRepository) Create(referralUserID uint, userID uint) error 
 	}
 
 	return nil
+}
+
+func (r *referralUserRepository) Count(userID uint) (uint, error) {
+	var count int64
+
+	err := r.db.Model(&models.ReferralUser{}).
+		Where("user_id = ?", userID).
+		Count(&count).
+		Error
+
+	if err != nil {
+		return 0, fmt.Errorf("ReferralUserRepository::Create %v", err)
+	}
+
+	return uint(count), nil
 }

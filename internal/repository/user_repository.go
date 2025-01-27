@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"example.com/v2/pkg/transaction"
 	"fmt"
 
 	"example.com/v2/internal/models"
@@ -18,7 +19,9 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	db *gorm.DB
+	db                 *gorm.DB
+	userStatRepository UserStatRepository
+	transaction        transaction.TransactionManager
 }
 
 type CreateUserDTO struct {
@@ -26,8 +29,16 @@ type CreateUserDTO struct {
 	TelegramID uint64
 }
 
-func NewUserRepository(baseRepo *BaseRepository) UserRepository {
-	return &userRepository{db: baseRepo.DB}
+func NewUserRepository(
+	baseRepo *BaseRepository,
+	userStatRepository UserStatRepository,
+	transaction transaction.TransactionManager,
+) UserRepository {
+	return &userRepository{
+		db:                 baseRepo.DB,
+		userStatRepository: userStatRepository,
+		transaction:        transaction,
+	}
 }
 
 func (r *userRepository) FindById(id uint64) (*models.User, error) {
@@ -51,8 +62,24 @@ func (r *userRepository) Create(dto CreateUserDTO) (*models.User, error) {
 		TelegramID: dto.TelegramID,
 	}
 
-	if err := r.db.Create(user).Error; err != nil {
-		return nil, fmt.Errorf("Create: err %w", err)
+	err := r.transaction.RunInTransaction(
+		func() error {
+			if err := r.db.Create(user).Error; err != nil {
+				return fmt.Errorf("UserRepository::Create err %w", err)
+			}
+
+			_, err := r.userStatRepository.Create(user)
+
+			if err != nil {
+				return fmt.Errorf("UserRepository::Create: err %w", err)
+			}
+
+			return nil
+		},
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("UserRepository::Create: err %w", err)
 	}
 
 	return user, nil

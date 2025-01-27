@@ -53,3 +53,21 @@ func (rc *ReferralController) GetReferrals(c *gin.Context) {
 		},
 	)
 }
+
+func (rc *ReferralController) GetReferralCount(c *gin.Context) {
+	user, err := rc.auth.GetUser(c)
+
+	if err != nil {
+		rc.logger.WithError(err).Error("NewReferralController::GetReferralCount")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
+		return
+	}
+
+	count, err := rc.repository.Count(user.ID)
+
+	if err != nil {
+		rc.logger.WithError(err).Error("NewReferralController::GetReferralCount")
+	}
+
+	c.JSON(http.StatusOK, gin.H{"count": count})
+}

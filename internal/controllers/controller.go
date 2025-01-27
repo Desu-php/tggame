@@ -10,4 +10,5 @@ var Module = fx.Provide(
 	NewUserItemController,
 	NewRarityController,
 	NewReferralController,
+	NewUserController,
 )
