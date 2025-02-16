@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 
@@ -23,14 +24,14 @@ func NewItemService(
 	}
 }
 
-func (s *ItemService) GetRandomItem() (*models.Item, error) {
-	rarity, err := s.rarityService.GetRandom()
+func (s *ItemService) GetRandomItem(ctx context.Context) (*models.Item, error) {
+	rarity, err := s.rarityService.GetRandom(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("ItemService::GetRandomItem %w", err)
 	}
 
-	items, err := s.itemRepository.GetAllByRarity(rarity)
+	items, err := s.itemRepository.GetAllByRarity(ctx, rarity)
 
 	if err != nil {
 		return nil, fmt.Errorf("ItemService::GetRandomItem %w", err)

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"math"
 
@@ -37,8 +38,8 @@ func NewUserChestService(
 	}
 }
 
-func (s *UserChestService) Create(user *models.User) (*models.UserChest, error) {
-	chest, err := s.chestRepo.GetDefault()
+func (s *UserChestService) Create(ctx context.Context, user *models.User) (*models.UserChest, error) {
+	chest, err := s.chestRepo.GetDefault(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("UserChestService::Create err %w", err)
@@ -48,7 +49,7 @@ func (s *UserChestService) Create(user *models.User) (*models.UserChest, error) 
 		return nil, fmt.Errorf("UserChestService::Create default chest not found")
 	}
 
-	userChest, err := s.userChestRepo.Create(&models.UserChest{
+	userChest, err := s.userChestRepo.Create(ctx, &models.UserChest{
 		UserID:        user.ID,
 		ChestID:       chest.ID,
 		CurrentHealth: chest.Health,
@@ -65,27 +66,27 @@ func (s *UserChestService) Create(user *models.User) (*models.UserChest, error) 
 	return userChest, nil
 }
 
-func (s *UserChestService) LevelUp(userChest *models.UserChest) error {
-	err := s.transaction.RunInTransaction(func() error {
-		userChestHistory, err := s.userChestHistoryRepo.Create(userChest)
+func (s *UserChestService) LevelUp(ctx context.Context, userChest *models.UserChest) error {
+	err := s.transaction.RunInTransaction(ctx, func(ctx context.Context) error {
+		userChestHistory, err := s.userChestHistoryRepo.Create(ctx, userChest)
 
 		if err != nil {
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
 		}
 
-		item, err := s.itemService.GetRandomItem()
+		item, err := s.itemService.GetRandomItem(ctx)
 
 		if err != nil {
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
 		}
 
-		_, err = s.userItemService.SetUserItem(userChest.UserID, item, userChestHistory)
+		_, err = s.userItemService.SetUserItem(ctx, userChest.UserID, item, userChestHistory)
 
 		if err != nil {
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
 		}
 
-		err = s.Upgrade(userChest)
+		err = s.Upgrade(ctx, userChest)
 
 		if err != nil {
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
@@ -101,10 +102,10 @@ func (s *UserChestService) LevelUp(userChest *models.UserChest) error {
 	return nil
 }
 
-func (s *UserChestService) Upgrade(uc *models.UserChest) error {
+func (s *UserChestService) Upgrade(ctx context.Context, uc *models.UserChest) error {
 	uc.Level++
 
-	nextChest, err := s.chestRepo.GetNextChest(uint(uc.Level))
+	nextChest, err := s.chestRepo.GetNextChest(ctx, uint(uc.Level))
 
 	if err != nil {
 		return fmt.Errorf("UserChestService::Upgrade err %w", err)
@@ -120,7 +121,7 @@ func (s *UserChestService) Upgrade(uc *models.UserChest) error {
 
 	uc.CurrentHealth = int(uc.Health)
 
-	err = s.userChestRepo.Update(uc)
+	err = s.userChestRepo.Update(ctx, uc)
 
 	if err != nil {
 		return fmt.Errorf("UserChestService::Upgrade %w", err)

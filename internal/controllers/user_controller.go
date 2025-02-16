@@ -35,7 +35,7 @@ func (uc *UserController) Info(c *gin.Context) {
 		return
 	}
 
-	userStat, err := uc.userStatRepository.GetStat(user)
+	userStat, err := uc.userStatRepository.GetStat(c, user)
 
 	if err != nil {
 		uc.logger.WithError(err).Error("UserController::Info")

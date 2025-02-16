@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"example.com/v2/pkg/transaction"
 	"fmt"
@@ -10,12 +11,12 @@ import (
 )
 
 type UserRepository interface {
-	FindById(id uint64) (*models.User, error)
-	Create(dto CreateUserDTO) (*models.User, error)
-	GetAll() ([]models.User, error)
-	FindByTgId(id uint64) (*models.User, error)
-	UpdateSession(user *models.User, session string) error
-	FindWithoutPreloadingByTgId(id uint64) (*models.User, error)
+	FindById(ctx context.Context, id uint64) (*models.User, error)
+	Create(ctx context.Context, dto CreateUserDTO) (*models.User, error)
+	GetAll(ctx context.Context) ([]models.User, error)
+	FindByTgId(ctx context.Context, id uint64) (*models.User, error)
+	UpdateSession(ctx context.Context, user *models.User, session string) error
+	FindWithoutPreloadingByTgId(ctx context.Context, id uint64) (*models.User, error)
 }
 
 type userRepository struct {
@@ -41,10 +42,10 @@ func NewUserRepository(
 	}
 }
 
-func (r *userRepository) FindById(id uint64) (*models.User, error) {
+func (r *userRepository) FindById(ctx context.Context, id uint64) (*models.User, error) {
 	var user models.User
 
-	result := r.db.First(&user, id)
+	result := r.db.WithContext(ctx).First(&user, id)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -56,19 +57,19 @@ func (r *userRepository) FindById(id uint64) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) Create(dto CreateUserDTO) (*models.User, error) {
+func (r *userRepository) Create(ctx context.Context, dto CreateUserDTO) (*models.User, error) {
 	user := &models.User{
 		Username:   dto.Username,
 		TelegramID: dto.TelegramID,
 	}
 
-	err := r.transaction.RunInTransaction(
-		func() error {
-			if err := r.db.Create(user).Error; err != nil {
+	err := r.transaction.RunInTransaction(ctx,
+		func(ctx context.Context) error {
+			if err := r.db.WithContext(ctx).Create(user).Error; err != nil {
 				return fmt.Errorf("UserRepository::Create err %w", err)
 			}
 
-			_, err := r.userStatRepository.Create(user)
+			_, err := r.userStatRepository.Create(ctx, user)
 
 			if err != nil {
 				return fmt.Errorf("UserRepository::Create: err %w", err)
@@ -85,18 +86,18 @@ func (r *userRepository) Create(dto CreateUserDTO) (*models.User, error) {
 	return user, nil
 }
 
-func (r *userRepository) GetAll() ([]models.User, error) {
+func (r *userRepository) GetAll(ctx context.Context) ([]models.User, error) {
 	var users []models.User
-	if err := r.db.Find(&users).Error; err != nil {
+	if err := r.db.WithContext(ctx).Find(&users).Error; err != nil {
 		return nil, err
 	}
 	return users, nil
 }
 
-func (r *userRepository) FindByTgId(id uint64) (*models.User, error) {
+func (r *userRepository) FindByTgId(ctx context.Context, id uint64) (*models.User, error) {
 	var user models.User
 
-	result := r.db.Preload("UserChest.Chest.Rarity").First(&user, "telegram_id = ?", id)
+	result := r.db.WithContext(ctx).Preload("UserChest.Chest.Rarity").First(&user, "telegram_id = ?", id)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -108,10 +109,10 @@ func (r *userRepository) FindByTgId(id uint64) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) FindWithoutPreloadingByTgId(id uint64) (*models.User, error) {
+func (r *userRepository) FindWithoutPreloadingByTgId(ctx context.Context, id uint64) (*models.User, error) {
 	var user models.User
 
-	result := r.db.First(&user, "telegram_id = ?", id)
+	result := r.db.WithContext(ctx).First(&user, "telegram_id = ?", id)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -123,8 +124,8 @@ func (r *userRepository) FindWithoutPreloadingByTgId(id uint64) (*models.User, e
 	return &user, nil
 }
 
-func (r *userRepository) UpdateSession(user *models.User, session string) error {
-	result := r.db.Model(&user).Update("session", session)
+func (r *userRepository) UpdateSession(ctx context.Context, user *models.User, session string) error {
+	result := r.db.WithContext(ctx).Model(&user).Update("session", session)
 
 	if result.Error != nil {
 		return fmt.Errorf("UpdateSession: err %w", result.Error)

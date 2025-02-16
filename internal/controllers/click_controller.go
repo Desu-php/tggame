@@ -52,7 +52,7 @@ func (cc *ClickController) Store(c *gin.Context) {
 		return
 	}
 
-	err := cc.service.Damage(user, request.Count)
+	err := cc.service.Damage(c, user, request.Count)
 
 	if err != nil {
 		cc.logger.WithError(err).Error("ClickController::store")

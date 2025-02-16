@@ -37,7 +37,7 @@ func (rc *ReferralController) GetReferrals(c *gin.Context) {
 		return
 	}
 
-	referrals, err := rc.repository.GetByUserID(user.ID)
+	referrals, err := rc.repository.GetByUserID(c, user.ID)
 
 	log.Println(referrals)
 
@@ -63,7 +63,7 @@ func (rc *ReferralController) GetReferralCount(c *gin.Context) {
 		return
 	}
 
-	count, err := rc.repository.Count(user.ID)
+	count, err := rc.repository.Count(c, user.ID)
 
 	if err != nil {
 		rc.logger.WithError(err).Error("NewReferralController::GetReferralCount")

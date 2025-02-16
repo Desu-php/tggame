@@ -22,7 +22,7 @@ func NewRarityController(logger *logrus.Logger, repository repository.RarityRepo
 }
 
 func (cc *RarityController) GetRarities(c *gin.Context) {
-	rarities, err := cc.repository.GetAll()
+	rarities, err := cc.repository.GetAll(c)
 
 	if err != nil {
 		cc.logger.WithContext(c).Errorf("failed to get rarities: %v", err)

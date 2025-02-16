@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 
 	"example.com/v2/internal/models"
@@ -8,7 +9,7 @@ import (
 )
 
 type ItemRepository interface {
-	GetAllByRarity(rarity *models.Rarity) ([]models.Item, error)
+	GetAllByRarity(ctx context.Context, rarity *models.Rarity) ([]models.Item, error)
 }
 
 type itemRepository struct {
@@ -19,10 +20,10 @@ func NewItemRepository(db *gorm.DB) ItemRepository {
 	return &itemRepository{db: db}
 }
 
-func (r *itemRepository) GetAllByRarity(rarity *models.Rarity) ([]models.Item, error){
+func (r *itemRepository) GetAllByRarity(ctx context.Context, rarity *models.Rarity) ([]models.Item, error) {
 	var items []models.Item
 
-	if err := r.db.Where("rarity_id = ?", rarity.ID).Find(&items).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("rarity_id = ?", rarity.ID).Find(&items).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch items: %v", err)
 	}
 

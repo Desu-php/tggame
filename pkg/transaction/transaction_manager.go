@@ -1,7 +1,11 @@
 package transaction
 
-type TransactionFunc func() error
+import (
+	"context"
+)
+
+type TransactionFunc func(ctx context.Context) error
 
 type TransactionManager interface {
-	RunInTransaction(fn TransactionFunc) error
+	RunInTransaction(ctx context.Context, fn TransactionFunc) error
 }

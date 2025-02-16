@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"example.com/v2/internal/models"
 	"fmt"
 	"gorm.io/gorm"
@@ -8,10 +9,10 @@ import (
 )
 
 type UserChestRepository interface {
-	Create(userChest *models.UserChest) (*models.UserChest, error)
-	DecrementHealth(userChest *models.UserChest, damage uint) error
-	Update(userChest *models.UserChest) error
-	FindByUser(user *models.User) (*models.UserChest, error)
+	Create(ctx context.Context, userChest *models.UserChest) (*models.UserChest, error)
+	DecrementHealth(ctx context.Context, userChest *models.UserChest, damage uint) error
+	Update(ctx context.Context, userChest *models.UserChest) error
+	FindByUser(ctx context.Context, user *models.User) (*models.UserChest, error)
 }
 
 type userChestRepository struct {
@@ -22,8 +23,8 @@ func NewUserChestRepository(db *gorm.DB) UserChestRepository {
 	return &userChestRepository{db: db}
 }
 
-func (r *userChestRepository) Create(userChest *models.UserChest) (*models.UserChest, error) {
-	result := r.db.Create(userChest)
+func (r *userChestRepository) Create(ctx context.Context, userChest *models.UserChest) (*models.UserChest, error) {
+	result := r.db.WithContext(ctx).Create(userChest)
 
 	if result.Error != nil {
 		return nil, fmt.Errorf("UserChestRepository::Create: err %w", result.Error)
@@ -32,10 +33,10 @@ func (r *userChestRepository) Create(userChest *models.UserChest) (*models.UserC
 	return userChest, nil
 }
 
-func (r *userChestRepository) DecrementHealth(userChest *models.UserChest, damage uint) error {
+func (r *userChestRepository) DecrementHealth(ctx context.Context, userChest *models.UserChest, damage uint) error {
 	userChest.CurrentHealth = userChest.CurrentHealth - int(damage)
 
-	result := r.db.Save(userChest)
+	result := r.db.WithContext(ctx).Save(userChest)
 
 	if result.Error != nil {
 		return fmt.Errorf("UserChestRepository::DecrementHealth: err %w", result.Error)
@@ -44,8 +45,8 @@ func (r *userChestRepository) DecrementHealth(userChest *models.UserChest, damag
 	return nil
 }
 
-func (r *userChestRepository) Update(userChest *models.UserChest) error {
-	result := r.db.Updates(&models.UserChest{
+func (r *userChestRepository) Update(ctx context.Context, userChest *models.UserChest) error {
+	result := r.db.WithContext(ctx).Updates(&models.UserChest{
 		ID:            userChest.ID,
 		ChestID:       userChest.ChestID,
 		Level:         userChest.Level,
@@ -61,10 +62,10 @@ func (r *userChestRepository) Update(userChest *models.UserChest) error {
 	return nil
 }
 
-func (r *userChestRepository) FindByUser(user *models.User) (*models.UserChest, error) {
+func (r *userChestRepository) FindByUser(ctx context.Context, user *models.User) (*models.UserChest, error) {
 	var userChest models.UserChest
 
-	result := r.db.Preload("Chest.Rarity").First(&userChest, "user_id = ?", user.ID)
+	result := r.db.WithContext(ctx).Preload("Chest.Rarity").First(&userChest, "user_id = ?", user.ID)
 
 	if result.Error != nil {
 		return nil, fmt.Errorf("UserChestRepository::FindByUser: err %w", result.Error)

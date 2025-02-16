@@ -12,13 +12,13 @@ import (
 )
 
 type UserItemController struct {
-	userItemRepository repository.UserItemRespository
+	userItemRepository repository.UserItemRepository
 	logger             *logrus.Logger
 	auth               *auth.AuthService
 	image              *image.Image
 }
 
-func NewUserItemController(userItemRepository repository.UserItemRespository, logger *logrus.Logger, image *image.Image) *UserItemController {
+func NewUserItemController(userItemRepository repository.UserItemRepository, logger *logrus.Logger, image *image.Image) *UserItemController {
 	return &UserItemController{
 		userItemRepository: userItemRepository,
 		logger:             logger,
@@ -35,7 +35,7 @@ func (cc *UserItemController) GetLast(c *gin.Context) {
 		return
 	}
 
-	userItem, err := cc.userItemRepository.GetLast(user.ID)
+	userItem, err := cc.userItemRepository.GetLast(c, user.ID)
 
 	if err != nil {
 		cc.logger.WithError(err).Error("UserItemController::GetLast")
@@ -55,7 +55,7 @@ func (cc *UserItemController) GetUserItems(c *gin.Context) {
 		return
 	}
 
-	userItems, err := cc.userItemRepository.GetUserItems(user.ID)
+	userItems, err := cc.userItemRepository.GetUserItems(c, user.ID)
 
 	if err != nil {
 		cc.logger.WithError(err).Error("UserItemController::GetLast")

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"example.com/v2/internal/models"
 	"fmt"
 	"gorm.io/gorm"
@@ -8,9 +9,9 @@ import (
 )
 
 type ReferralUserRepository interface {
-	GetByUserID(userID uint) ([]models.ReferralUser, error)
-	Create(referralUserID uint, userID uint) error
-	Count(userID uint) (uint, error)
+	GetByUserID(ctx context.Context, userID uint) ([]models.ReferralUser, error)
+	Create(ctx context.Context, referralUserID uint, userID uint) error
+	Count(ctx context.Context, userID uint) (uint, error)
 }
 
 type referralUserRepository struct {
@@ -21,10 +22,10 @@ func NewReferralUserRepository(db *gorm.DB) ReferralUserRepository {
 	return &referralUserRepository{db: db}
 }
 
-func (r *referralUserRepository) GetByUserID(userID uint) ([]models.ReferralUser, error) {
+func (r *referralUserRepository) GetByUserID(ctx context.Context, userID uint) ([]models.ReferralUser, error) {
 	var referralUsers []models.ReferralUser
 
-	err := r.db.Model(&models.ReferralUser{}).
+	err := r.db.WithContext(ctx).Model(&models.ReferralUser{}).
 		Preload("ReferredUser").
 		Where("user_id = ?", userID).
 		Order("id DESC").
@@ -40,8 +41,8 @@ func (r *referralUserRepository) GetByUserID(userID uint) ([]models.ReferralUser
 	return referralUsers, nil
 }
 
-func (r *referralUserRepository) Create(referralUserID uint, userID uint) error {
-	err := r.db.Create(&models.ReferralUser{
+func (r *referralUserRepository) Create(ctx context.Context, referralUserID uint, userID uint) error {
+	err := r.db.WithContext(ctx).Create(&models.ReferralUser{
 		UserID:         userID,
 		ReferredUserID: referralUserID,
 	}).Error
@@ -53,10 +54,10 @@ func (r *referralUserRepository) Create(referralUserID uint, userID uint) error 
 	return nil
 }
 
-func (r *referralUserRepository) Count(userID uint) (uint, error) {
+func (r *referralUserRepository) Count(ctx context.Context, userID uint) (uint, error) {
 	var count int64
 
-	err := r.db.Model(&models.ReferralUser{}).
+	err := r.db.WithContext(ctx).Model(&models.ReferralUser{}).
 		Where("user_id = ?", userID).
 		Count(&count).
 		Error

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 
 	"example.com/v2/internal/models"
@@ -8,7 +9,7 @@ import (
 )
 
 type RarityRepository interface {
-	GetAll() ([]models.Rarity, error)
+	GetAll(ctx context.Context) ([]models.Rarity, error)
 }
 
 type rarityRepository struct {
@@ -19,10 +20,10 @@ func NewRarityRepository(db *gorm.DB) RarityRepository {
 	return &rarityRepository{db: db}
 }
 
-func (r *rarityRepository) GetAll() ([]models.Rarity, error) {
+func (r *rarityRepository) GetAll(ctx context.Context) ([]models.Rarity, error) {
 	var rarities []models.Rarity
 
-	if err := r.db.Order("sort").Find(&rarities).Error; err != nil {
+	if err := r.db.WithContext(ctx).Order("sort").Find(&rarities).Error; err != nil {
 		return nil, fmt.Errorf("RarityRepository::GetAll %v", err)
 	}
 

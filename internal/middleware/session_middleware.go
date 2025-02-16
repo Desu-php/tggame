@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-
 func SessionMiddleware(sessionCache adapter.UserSessionAdapter, logger *logrus.Logger, userRepository repository.UserRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sessionHeader := c.GetHeader("x-session")
@@ -31,7 +30,7 @@ func SessionMiddleware(sessionCache adapter.UserSessionAdapter, logger *logrus.L
 		telegramID := parts[0]
 		session := parts[1]
 
-	    tgId, err := strconv.ParseUint(telegramID, 10, 64)
+		tgId, err := strconv.ParseUint(telegramID, 10, 64)
 
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid x-session format"})
@@ -53,7 +52,7 @@ func SessionMiddleware(sessionCache adapter.UserSessionAdapter, logger *logrus.L
 			return
 		}
 
-		user, err := userRepository.FindWithoutPreloadingByTgId(tgId)
+		user, err := userRepository.FindWithoutPreloadingByTgId(c, tgId)
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Server Error"})

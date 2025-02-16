@@ -34,7 +34,7 @@ func (gc *GameController) Start(c *gin.Context) {
 		return
 	}
 
-	user, err := gc.service.Start(&startDto)
+	user, err := gc.service.Start(c, &startDto)
 
 	if err != nil {
 		gc.logger.WithContext(c).Error(err)

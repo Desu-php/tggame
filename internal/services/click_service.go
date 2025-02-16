@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 
 	"example.com/v2/internal/models"
@@ -26,9 +27,9 @@ func NewClickService(
 	}
 }
 
-func (s *ClickService) Damage(user *models.User, count uint) error {
+func (s *ClickService) Damage(ctx context.Context, user *models.User, count uint) error {
 
-	userChest, err := s.userChestRepository.FindByUser(user)
+	userChest, err := s.userChestRepository.FindByUser(ctx, user)
 
 	if err != nil {
 		return fmt.Errorf("ClickService::Damage %w", err)
@@ -36,15 +37,15 @@ func (s *ClickService) Damage(user *models.User, count uint) error {
 
 	user.UserChest = *userChest
 
-	err = s.transaction.RunInTransaction(func() error {
-		err := s.userChestRepository.DecrementHealth(&user.UserChest, count)
+	err = s.transaction.RunInTransaction(ctx, func(ctx context.Context) error {
+		err := s.userChestRepository.DecrementHealth(ctx, &user.UserChest, count)
 
 		if err != nil {
 			return fmt.Errorf("ClickService::Damage %w", err)
 		}
 
 		if user.UserChest.CurrentHealth <= 0 {
-			err = s.userChestService.LevelUp(&user.UserChest)
+			err = s.userChestService.LevelUp(ctx, &user.UserChest)
 
 			if err != nil {
 				return fmt.Errorf("ClickService::Damage %w", err)

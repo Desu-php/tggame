@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/repository"
 	"example.com/v2/pkg/dto"
@@ -30,8 +31,8 @@ func NewUserService(
 	}
 }
 
-func (u *UserService) FirstOrCreateByTgId(dto *dto.GameStartDto) (*models.User, error) {
-	user, err := u.repo.FindByTgId(dto.TelegramId)
+func (u *UserService) FirstOrCreateByTgId(ctx context.Context, dto *dto.GameStartDto) (*models.User, error) {
+	user, err := u.repo.FindByTgId(ctx, dto.TelegramId)
 
 	if err != nil {
 		return nil, fmt.Errorf("FirstOrCreateByTgId: %w", err)
@@ -41,22 +42,22 @@ func (u *UserService) FirstOrCreateByTgId(dto *dto.GameStartDto) (*models.User, 
 		return user, nil
 	}
 
-	err = u.transaction.RunInTransaction(func() error {
-		user, err = u.repo.Create(repository.CreateUserDTO{TelegramID: dto.TelegramId, Username: dto.Username})
+	err = u.transaction.RunInTransaction(ctx, func(ctx context.Context) error {
+		user, err = u.repo.Create(ctx, repository.CreateUserDTO{TelegramID: dto.TelegramId, Username: dto.Username})
 
 		if err != nil {
 			return fmt.Errorf("FirstOrCreateByTgId: err %w", err)
 		}
 
 		if dto.ReferrerId != nil {
-			referrer, err := u.repo.FindById(uint64(*dto.ReferrerId))
+			referrer, err := u.repo.FindById(ctx, uint64(*dto.ReferrerId))
 
 			if err != nil {
 				return fmt.Errorf("FirstOrCreateByTgId: err %w", err)
 			}
 
 			if referrer != nil {
-				err = u.referralUserRepository.Create(user.ID, referrer.ID)
+				err = u.referralUserRepository.Create(ctx, user.ID, referrer.ID)
 
 				if err != nil {
 					return fmt.Errorf("FirstOrCreateByTgId: err %w", err)
@@ -64,7 +65,7 @@ func (u *UserService) FirstOrCreateByTgId(dto *dto.GameStartDto) (*models.User, 
 			}
 		}
 
-		userChest, err := u.userChestService.Create(user)
+		userChest, err := u.userChestService.Create(ctx, user)
 
 		if err != nil {
 			return fmt.Errorf("FirstOrCreateByTgId: err %w", err)
@@ -82,14 +83,14 @@ func (u *UserService) FirstOrCreateByTgId(dto *dto.GameStartDto) (*models.User, 
 	return user, nil
 }
 
-func (u *UserService) GenerateSession(user *models.User) (*models.User, error) {
+func (u *UserService) GenerateSession(ctx context.Context, user *models.User) (*models.User, error) {
 	session, err := str.GenerateSessionKey()
 
 	if err != nil {
 		return nil, fmt.Errorf("GenerateSession: err %w", err)
 	}
 
-	err = u.repo.UpdateSession(user, session)
+	err = u.repo.UpdateSession(ctx, user, session)
 
 	if err != nil {
 		return nil, fmt.Errorf("GenerateSession: err %w", err)
