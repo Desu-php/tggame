@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
+	"example.com/v2/pkg/db"
 	"fmt"
 
 	"example.com/v2/internal/models"
-	"gorm.io/gorm"
 )
 
 type UserChestHistoryRepository interface {
@@ -13,10 +13,10 @@ type UserChestHistoryRepository interface {
 }
 
 type userChestHistoryRepository struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewUserChestHistoryRepository(db *gorm.DB) UserChestHistoryRepository {
+func NewUserChestHistoryRepository(db *db.DB) UserChestHistoryRepository {
 	return &userChestHistoryRepository{db: db}
 }
 

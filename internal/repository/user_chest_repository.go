@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"example.com/v2/internal/models"
+	"example.com/v2/pkg/db"
 	"fmt"
-	"gorm.io/gorm"
 	"log"
 )
 
@@ -16,10 +16,10 @@ type UserChestRepository interface {
 }
 
 type userChestRepository struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewUserChestRepository(db *gorm.DB) UserChestRepository {
+func NewUserChestRepository(db *db.DB) UserChestRepository {
 	return &userChestRepository{db: db}
 }
 

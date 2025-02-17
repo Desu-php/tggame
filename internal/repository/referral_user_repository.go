@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"example.com/v2/internal/models"
+	"example.com/v2/pkg/db"
 	"fmt"
-	"gorm.io/gorm"
 	"log"
 )
 
@@ -15,10 +15,10 @@ type ReferralUserRepository interface {
 }
 
 type referralUserRepository struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewReferralUserRepository(db *gorm.DB) ReferralUserRepository {
+func NewReferralUserRepository(db *db.DB) ReferralUserRepository {
 	return &referralUserRepository{db: db}
 }
 

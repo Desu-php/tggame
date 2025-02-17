@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"example.com/v2/pkg/db"
 	"fmt"
 
 	"example.com/v2/internal/models"
@@ -16,15 +17,14 @@ type ChestRepository interface {
 }
 
 type chestRepository struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewChestRepository(db *gorm.DB) ChestRepository {
+func NewChestRepository(db *db.DB) ChestRepository {
 	return &chestRepository{db: db}
 }
 
 func (r *chestRepository) GetDefault(ctx context.Context) (*models.Chest, error) {
-	return nil, fmt.Errorf("Not yet implemented")
 	var chest models.Chest
 
 	result := r.db.WithContext(ctx).Preload("Rarity").Where(&models.Chest{IsDefault: true}).First(&chest)

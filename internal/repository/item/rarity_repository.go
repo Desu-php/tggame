@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
+	"example.com/v2/pkg/db"
 	"fmt"
 
 	"example.com/v2/internal/models"
-	"gorm.io/gorm"
 )
 
 type RarityRepository interface {
@@ -13,10 +13,10 @@ type RarityRepository interface {
 }
 
 type rarityRepository struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewRarityRepository(db *gorm.DB) RarityRepository {
+func NewRarityRepository(db *db.DB) RarityRepository {
 	return &rarityRepository{db: db}
 }
 

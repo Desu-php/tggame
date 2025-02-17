@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
+	"example.com/v2/pkg/db"
 	"fmt"
 
 	"example.com/v2/internal/models"
-	"gorm.io/gorm"
 )
 
 type ItemRepository interface {
@@ -13,10 +13,10 @@ type ItemRepository interface {
 }
 
 type itemRepository struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewItemRepository(db *gorm.DB) ItemRepository {
+func NewItemRepository(db *db.DB) ItemRepository {
 	return &itemRepository{db: db}
 }
 

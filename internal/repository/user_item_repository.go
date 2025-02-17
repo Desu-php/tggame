@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"example.com/v2/internal/models"
+	"example.com/v2/pkg/db"
 	"fmt"
-	"gorm.io/gorm"
 )
 
 type UserItemRepository interface {
@@ -23,10 +23,10 @@ type GroupedUserItem struct {
 }
 
 type userItemRepository struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewUserItemRepository(db *gorm.DB) UserItemRepository {
+func NewUserItemRepository(db *db.DB) UserItemRepository {
 	return &userItemRepository{db: db}
 }
 

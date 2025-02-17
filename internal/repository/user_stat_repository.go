@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"example.com/v2/internal/models"
+	"example.com/v2/pkg/db"
 	"fmt"
-	"gorm.io/gorm"
 )
 
 type UserStatRepository interface {
@@ -13,10 +13,10 @@ type UserStatRepository interface {
 }
 
 type userStatRepository struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewUserStatRepository(db *gorm.DB) UserStatRepository {
+func NewUserStatRepository(db *db.DB) UserStatRepository {
 	return &userStatRepository{db: db}
 }
 

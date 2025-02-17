@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"example.com/v2/pkg/db"
 	"example.com/v2/pkg/transaction"
 	"fmt"
 
@@ -20,7 +21,7 @@ type UserRepository interface {
 }
 
 type userRepository struct {
-	db                 *gorm.DB
+	db                 *db.DB
 	userStatRepository UserStatRepository
 	transaction        transaction.TransactionManager
 }
@@ -31,12 +32,12 @@ type CreateUserDTO struct {
 }
 
 func NewUserRepository(
-	baseRepo *BaseRepository,
+	db *db.DB,
 	userStatRepository UserStatRepository,
 	transaction transaction.TransactionManager,
 ) UserRepository {
 	return &userRepository{
-		db:                 baseRepo.DB,
+		db:                 db,
 		userStatRepository: userStatRepository,
 		transaction:        transaction,
 	}

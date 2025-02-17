@@ -2,30 +2,20 @@ package transaction
 
 import (
 	"context"
+	"example.com/v2/pkg/db"
 	"gorm.io/gorm"
 )
 
-type txKey struct{}
-
 type GormTransactionManager struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewTransactionManager(db *gorm.DB) TransactionManager {
+func NewTransactionManager(db *db.DB) TransactionManager {
 	return &GormTransactionManager{db: db}
 }
 
 func (tm *GormTransactionManager) RunInTransaction(ctx context.Context, fn TransactionFunc) error {
-	// Проверяем, есть ли уже открытая транзакция в текущем контексте
-	if tx, ok := ctx.Value(txKey{}).(*gorm.DB); ok {
-		// Если транзакция уже есть, передаем её в функцию
-		txCtx := context.WithValue(ctx, txKey{}, tx)
-		return fn(txCtx)
-	}
-
-	// Если транзакции нет, создаем новую и передаем в контекст
-	return tm.db.Transaction(func(tx *gorm.DB) error {
-		txCtx := context.WithValue(ctx, txKey{}, tx)
-		return fn(txCtx)
+	return tm.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return fn(tm.db.PutTxToContext(ctx, tx))
 	})
 }

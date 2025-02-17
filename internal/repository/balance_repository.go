@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"example.com/v2/internal/models"
+	"example.com/v2/pkg/db"
 	"fmt"
-	"gorm.io/gorm"
 )
 
 type BalanceRepository interface {
@@ -14,10 +14,10 @@ type BalanceRepository interface {
 }
 
 type balanceRepository struct {
-	db *gorm.DB
+	db *db.DB
 }
 
-func NewBalanceRepository(db *gorm.DB) BalanceRepository {
+func NewBalanceRepository(db *db.DB) BalanceRepository {
 	return &balanceRepository{db: db}
 }
 
