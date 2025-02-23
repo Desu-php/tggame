@@ -12,17 +12,20 @@ type UserController struct {
 	logger             *logrus.Logger
 	auth               *auth.AuthService
 	userStatRepository repository.UserStatRepository
+	balanceRepository  repository.BalanceRepository
 }
 
 func NewUserController(
 	logger *logrus.Logger,
 	auth *auth.AuthService,
 	userStatRepository repository.UserStatRepository,
+	balanceRepository repository.BalanceRepository,
 ) *UserController {
 	return &UserController{
 		logger:             logger,
 		auth:               auth,
 		userStatRepository: userStatRepository,
+		balanceRepository:  balanceRepository,
 	}
 }
 
@@ -43,7 +46,16 @@ func (uc *UserController) Info(c *gin.Context) {
 		return
 	}
 
+	balance, err := uc.balanceRepository.FindByUserId(c, user.ID)
+
+	if err != nil {
+		uc.logger.WithError(err).Error("UserController::Info")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"stats": userStat,
+		"stats":   userStat,
+		"balance": balance.Balance,
 	})
 }

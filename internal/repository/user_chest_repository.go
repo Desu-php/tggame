@@ -52,6 +52,7 @@ func (r *userChestRepository) Update(ctx context.Context, userChest *models.User
 		Level:         userChest.Level,
 		CurrentHealth: userChest.CurrentHealth,
 		Health:        userChest.Health,
+		Amount:        userChest.Amount,
 	})
 
 	if result.Error != nil {

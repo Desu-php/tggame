@@ -12,4 +12,5 @@ type User struct {
 	CreatedAt  time.Time `json:"created_at" gorm:"autoCreateTime"` // TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	UpdatedAt  time.Time `json:"updated_at" gorm:"autoUpdateTime"` // TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	UserChest  UserChest `json:"user_chest" gorm:"foreignKey:UserID"`
+	Balance    Balance   `json:"balance" gorm:"foreignKey:UserID"`
 }

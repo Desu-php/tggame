@@ -18,6 +18,7 @@ type UserChestService struct {
 	userChestHistoryRepo repository.UserChestHistoryRepository
 	itemService          *services.ItemService
 	userItemService      *UserItemService
+	balanceService       *BalanceService
 }
 
 func NewUserChestService(
@@ -27,6 +28,7 @@ func NewUserChestService(
 	userChestHistoryRepo repository.UserChestHistoryRepository,
 	itemService *services.ItemService,
 	userItemService *UserItemService,
+	balanceService *BalanceService,
 ) *UserChestService {
 	return &UserChestService{
 		userChestRepo:        userChestRepo,
@@ -35,6 +37,7 @@ func NewUserChestService(
 		userChestHistoryRepo: userChestHistoryRepo,
 		itemService:          itemService,
 		userItemService:      userItemService,
+		balanceService:       balanceService,
 	}
 }
 
@@ -55,6 +58,7 @@ func (s *UserChestService) Create(ctx context.Context, user *models.User) (*mode
 		CurrentHealth: chest.Health,
 		Health:        uint(chest.Health),
 		Level:         1,
+		Amount:        chest.Amount,
 	})
 
 	userChest.Chest = *chest
@@ -66,7 +70,7 @@ func (s *UserChestService) Create(ctx context.Context, user *models.User) (*mode
 	return userChest, nil
 }
 
-func (s *UserChestService) LevelUp(ctx context.Context, userChest *models.UserChest) error {
+func (s *UserChestService) LevelUp(ctx context.Context, userChest *models.UserChest, user *models.User) error {
 	err := s.transaction.RunInTransaction(ctx, func(ctx context.Context) error {
 		userChestHistory, err := s.userChestHistoryRepo.Create(ctx, userChest)
 
@@ -81,6 +85,12 @@ func (s *UserChestService) LevelUp(ctx context.Context, userChest *models.UserCh
 		}
 
 		_, err = s.userItemService.SetUserItem(ctx, userChest.UserID, item, userChestHistory)
+
+		if err != nil {
+			return fmt.Errorf("UserChestService::LevelUp %w", err)
+		}
+
+		err = s.replenish(ctx, userChest, user)
 
 		if err != nil {
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
@@ -115,8 +125,10 @@ func (s *UserChestService) Upgrade(ctx context.Context, uc *models.UserChest) er
 		uc.Health = uint(nextChest.Health)
 		uc.ChestID = nextChest.ID
 		uc.Chest = *nextChest
+		uc.Amount = nextChest.Amount
 	} else {
 		s.IncreaseHealth(uc)
+		s.IncreaseAmount(uc)
 	}
 
 	uc.CurrentHealth = int(uc.Health)
@@ -133,4 +145,24 @@ func (s *UserChestService) Upgrade(ctx context.Context, uc *models.UserChest) er
 func (s *UserChestService) IncreaseHealth(uc *models.UserChest) {
 	increase := float64(uc.Health) * (uc.Chest.GrowthFactor / 100)
 	uc.Health = uint(math.Round(float64(uc.Health) + increase))
+}
+
+func (s *UserChestService) IncreaseAmount(uc *models.UserChest) {
+	increase := float64(uc.Amount) * (uc.Chest.AmountGrowthFactor / 100)
+	uc.Amount = uint32(math.Round(float64(uc.Amount) + increase))
+}
+
+func (s *UserChestService) replenish(ctx context.Context, uc *models.UserChest, user *models.User) error {
+	err := s.balanceService.Replenish(ctx, &TransactionDto{
+		Amount: int64(uc.Amount),
+		User:   user,
+		Model:  uc,
+		Type:   models.TransactionTypeIncome,
+	})
+
+	if err != nil {
+		return fmt.Errorf("UserChestService::replenish %w", err)
+	}
+
+	return nil
 }

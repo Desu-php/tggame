@@ -21,6 +21,7 @@ type UserChestResponse struct {
 	Health        uint           `json:"health"`
 	CurrentHealth int            `json:"current_health"`
 	Level         int            `json:"level"`
+	Amount        uint32         `json:"amount"`
 	Chest         *ChestResponse `json:"chest"`
 }
 

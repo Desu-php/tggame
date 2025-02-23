@@ -9,7 +9,7 @@ import (
 
 type Transaction struct {
 	ID         uint            `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID     int             `gorm:"not null" json:"user_id"`
+	UserID     uint            `gorm:"not null" json:"user_id"`
 	Amount     int64           `gorm:"not null" json:"amount"`
 	ModelType  string          `gorm:"type:varchar(255);not null" json:"model_type"`
 	ModelID    int             `gorm:"not null" json:"model_id"`

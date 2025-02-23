@@ -2,6 +2,7 @@ package repository
 
 import (
 	"example.com/v2/config"
+	balance "example.com/v2/internal/repository/balance"
 	itemService "example.com/v2/internal/repository/item"
 	"example.com/v2/pkg/db"
 	"fmt"
@@ -31,4 +32,6 @@ var Module = fx.Provide(
 	NewReferralUserRepository,
 	NewUserStatRepository,
 	NewBalanceRepository,
+	balance.NewTransactionRepository,
+	balance.NewBalanceRepository,
 )

@@ -16,3 +16,11 @@ type UserChest struct {
 	UpdatedAt     time.Time `gorm:"autoUpdateTime" json:"updated_at"` // Время обновления
 	Chest         Chest     `gorm:"foreignKey:ChestID" json:"chest"`  // Связь с сундуком
 }
+
+func (u *UserChest) TableName() string {
+	return "user_chests"
+}
+
+func (u *UserChest) ModelID() int {
+	return int(u.ID)
+}

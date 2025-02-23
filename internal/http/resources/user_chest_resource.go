@@ -20,6 +20,7 @@ func (r *UserChestResource) Map(object *models.UserChest) *responses.UserChestRe
 		Health:        object.Health,
 		CurrentHealth: object.CurrentHealth,
 		Level:         object.Level,
+		Amount:        object.Amount,
 		Chest: &responses.ChestResponse{
 			ID:     object.Chest.ID,
 			Name:   object.Chest.Name,

@@ -4,6 +4,7 @@ import (
 	"context"
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/repository"
+	balance "example.com/v2/internal/repository/balance"
 	"example.com/v2/pkg/dto"
 	"example.com/v2/pkg/str"
 	"example.com/v2/pkg/transaction"
@@ -15,6 +16,7 @@ type UserService struct {
 	userChestService       *UserChestService
 	transaction            transaction.TransactionManager
 	referralUserRepository repository.ReferralUserRepository
+	balanceRepo            balance.BalanceRepository
 }
 
 func NewUserService(
@@ -22,12 +24,14 @@ func NewUserService(
 	userChestService *UserChestService,
 	transaction transaction.TransactionManager,
 	referralUserRepository repository.ReferralUserRepository,
+	balanceRepo balance.BalanceRepository,
 ) *UserService {
 	return &UserService{
 		repo:                   repo,
 		userChestService:       userChestService,
 		transaction:            transaction,
 		referralUserRepository: referralUserRepository,
+		balanceRepo:            balanceRepo,
 	}
 }
 
@@ -72,6 +76,12 @@ func (u *UserService) FirstOrCreateByTgId(ctx context.Context, dto *dto.GameStar
 		}
 
 		user.UserChest = *userChest
+
+		_, err = u.balanceRepo.Create(ctx, user)
+
+		if err != nil {
+			return fmt.Errorf("FirstOrCreateByTgId: err %w", err)
+		}
 
 		return nil
 	})

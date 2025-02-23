@@ -45,7 +45,7 @@ func (s *ClickService) Damage(ctx context.Context, user *models.User, count uint
 		}
 
 		if user.UserChest.CurrentHealth <= 0 {
-			err = s.userChestService.LevelUp(ctx, &user.UserChest)
+			err = s.userChestService.LevelUp(ctx, &user.UserChest, user)
 
 			if err != nil {
 				return fmt.Errorf("ClickService::Damage %w", err)
