@@ -153,6 +153,10 @@ func (s *UserChestService) IncreaseAmount(uc *models.UserChest) {
 }
 
 func (s *UserChestService) replenish(ctx context.Context, uc *models.UserChest, user *models.User) error {
+	if uc.Amount == 0 {
+		return nil
+	}
+
 	err := s.balanceService.Replenish(ctx, &TransactionDto{
 		Amount: int64(uc.Amount),
 		User:   user,
