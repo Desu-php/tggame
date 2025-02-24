@@ -2,13 +2,12 @@ package services
 
 import (
 	"context"
-	"fmt"
-	"math"
-
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/repository"
 	services "example.com/v2/internal/services/item"
 	"example.com/v2/pkg/transaction"
+	"example.com/v2/pkg/utils"
+	"fmt"
 )
 
 type UserChestService struct {
@@ -143,13 +142,11 @@ func (s *UserChestService) Upgrade(ctx context.Context, uc *models.UserChest) er
 }
 
 func (s *UserChestService) IncreaseHealth(uc *models.UserChest) {
-	increase := float64(uc.Health) * (uc.Chest.GrowthFactor / 100)
-	uc.Health = uint(math.Round(float64(uc.Health) + increase))
+	uc.Health = uint(utils.GrowthIncrease(float64(uc.Health), uc.Chest.GrowthFactor))
 }
 
 func (s *UserChestService) IncreaseAmount(uc *models.UserChest) {
-	increase := float64(uc.Amount) * (uc.Chest.AmountGrowthFactor / 100)
-	uc.Amount = uint32(math.Round(float64(uc.Amount) + increase))
+	uc.Amount = uint32(utils.GrowthIncrease(float64(uc.Amount), uc.Chest.AmountGrowthFactor))
 }
 
 func (s *UserChestService) replenish(ctx context.Context, uc *models.UserChest, user *models.User) error {
