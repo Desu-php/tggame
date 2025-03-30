@@ -5,6 +5,7 @@ import (
 	"example.com/v2/internal/models"
 	"example.com/v2/pkg/db"
 	"fmt"
+	"log"
 )
 
 type BalanceRepository interface {
@@ -37,11 +38,11 @@ func (b *BalanceRepositoryImpl) Create(ctx context.Context, user *models.User) (
 }
 
 func (b *BalanceRepositoryImpl) FindBalance(ctx context.Context, user *models.User) (*models.Balance, error) {
-	balance := &models.Balance{
-		UserID: user.ID,
-	}
+	balance := &models.Balance{}
 
-	err := b.db.WithContext(ctx).First(balance).Error
+	log.Println(user, balance)
+
+	err := b.db.WithContext(ctx).Where("user_id = ?", user.ID).First(balance).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("BalanceRepository::SetBalance %w", err)
