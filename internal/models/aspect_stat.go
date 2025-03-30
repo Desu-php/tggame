@@ -5,7 +5,8 @@ import "time"
 type AspectStat struct {
 	ID                 uint
 	AspectID           uint
-	Level              uint
+	StartLevel         uint
+	EndLevel           uint
 	Damage             uint
 	CriticalDamage     uint
 	CriticalChance     float64

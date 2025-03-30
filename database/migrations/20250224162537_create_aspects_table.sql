@@ -4,6 +4,7 @@ CREATE TABLE aspects
 (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    type VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
     image VARCHAR(255) NOT NULL,
     created_at TIMESTAMP,
