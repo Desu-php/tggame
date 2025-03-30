@@ -56,7 +56,7 @@ func (cc *ClickController) Store(c *gin.Context) {
 
 	if err != nil {
 		cc.logger.WithError(err).Error("ClickController::store")
-		responses.ServerErrorResponse(c, gin.H{"error": "Server error"})
+		responses.ServerErrorResponse(c)
 		return
 	}
 

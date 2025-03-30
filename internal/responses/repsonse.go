@@ -1,8 +1,8 @@
 package responses
 
 import (
-	"net/http"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func BadResponse(c *gin.Context, e error) {
@@ -15,6 +15,10 @@ func OkResponse(c *gin.Context, obj any) {
 	c.JSON(http.StatusOK, obj)
 }
 
-func ServerErrorResponse(c *gin.Context, obj any) {
+func ServerErrorResponse(c *gin.Context) {
+	c.JSON(http.StatusInternalServerError, "Server Error")
+}
+
+func ServerErrorResponseWithMessage(c *gin.Context, obj any) {
 	c.JSON(http.StatusInternalServerError, obj)
 }

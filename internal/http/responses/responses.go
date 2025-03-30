@@ -67,3 +67,10 @@ type ReferralUserResponse struct {
 	Username  string    `json:"username"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type AspectResponse struct {
+	ID          uint   `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Image       string `json:"image"`
+}
