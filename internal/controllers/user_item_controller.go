@@ -12,17 +12,24 @@ import (
 )
 
 type UserItemController struct {
-	userItemRepository repository.UserItemRepository
-	logger             *logrus.Logger
-	auth               *auth.AuthService
-	image              *image.Image
+	userItemRepository         repository.UserItemRepository
+	logger                     *logrus.Logger
+	auth                       *auth.AuthService
+	image                      *image.Image
+	userChestHistoryRepository repository.UserChestHistoryRepository
 }
 
-func NewUserItemController(userItemRepository repository.UserItemRepository, logger *logrus.Logger, image *image.Image) *UserItemController {
+func NewUserItemController(
+	userItemRepository repository.UserItemRepository,
+	logger *logrus.Logger,
+	image *image.Image,
+	userChestHistoryRepository repository.UserChestHistoryRepository,
+) *UserItemController {
 	return &UserItemController{
-		userItemRepository: userItemRepository,
-		logger:             logger,
-		image:              image,
+		userItemRepository:         userItemRepository,
+		logger:                     logger,
+		image:                      image,
+		userChestHistoryRepository: userChestHistoryRepository,
 	}
 }
 
@@ -43,7 +50,18 @@ func (cc *UserItemController) GetLast(c *gin.Context) {
 		return
 	}
 
-	responses.OkResponse(c, gin.H{"data": resources.NewUserItemResource(cc.image).Map(userItem)})
+	amount, err := cc.userChestHistoryRepository.LastAmount(c, user)
+
+	if err != nil {
+		cc.logger.WithError(err).Error("UserItemController::GetLast")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
+		return
+	}
+
+	responses.OkResponse(c, gin.H{
+		"data":   resources.NewUserItemResource(cc.image).Map(userItem),
+		"amount": amount,
+	})
 }
 
 func (cc *UserItemController) GetUserItems(c *gin.Context) {
