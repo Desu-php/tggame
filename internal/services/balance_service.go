@@ -6,7 +6,7 @@ import (
 	balance "example.com/v2/internal/repository/balance"
 	"example.com/v2/pkg/transaction"
 	"fmt"
-	"log"
+	"math"
 )
 
 type BalanceService struct {
@@ -35,8 +35,6 @@ func NewBalanceService(
 }
 
 func (s *BalanceService) Replenish(ctx context.Context, dto *TransactionDto) error {
-	log.Println(dto)
-
 	if dto.Amount <= 0 {
 		return fmt.Errorf("BalanceService::Replenish amount must be greater than zero")
 	}
@@ -44,7 +42,41 @@ func (s *BalanceService) Replenish(ctx context.Context, dto *TransactionDto) err
 	_, err := s.CreateTransaction(ctx, dto)
 
 	if err != nil {
-		return fmt.Errorf("BalanceService::Replenish amount must be greater than zero")
+		return fmt.Errorf("BalanceService::Replenish %w", err)
+	}
+
+	return nil
+}
+
+func (s *BalanceService) Charge(ctx context.Context, dto *TransactionDto) error {
+	err := s.trx.RunInTransaction(ctx,
+		func(ctx context.Context) error {
+			findBalance, err := s.balanceRepository.FindBalance(ctx, dto.User)
+
+			if err != nil {
+				return fmt.Errorf("balanceService.CreateTransaction: %w", err)
+			}
+
+			amount := math.Abs(float64(dto.Amount))
+
+			if (findBalance.Balance - int64(amount)) < 0 {
+				return fmt.Errorf("BalanceService::Charge amount must be greater than zero")
+			}
+
+			dto.Amount = -dto.Amount
+
+			_, err = s.CreateTransaction(ctx, dto)
+
+			if err != nil {
+				return fmt.Errorf("BalanceService::Charge %w", err)
+			}
+
+			return nil
+		},
+	)
+
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -55,7 +87,7 @@ func (s *BalanceService) CreateTransaction(ctx context.Context, dto *Transaction
 
 	err := s.trx.RunInTransaction(ctx,
 		func(ctx context.Context) error {
-			findBalance, err := s.balanceRepository.FindBalance(ctx, dto.User)
+			findBalance, err := s.balanceRepository.LockForUpdate().FindBalance(ctx, dto.User)
 
 			if err != nil {
 				return fmt.Errorf("balanceService.CreateTransaction: %w", err)

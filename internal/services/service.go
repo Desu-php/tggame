@@ -16,4 +16,5 @@ var Module = fx.Provide(
 	itemService.NewItemService,
 	NewUserItemService,
 	authService.NewAuthService,
+	NewUserStatService,
 )

@@ -11,11 +11,11 @@ type UserAspect struct {
 	AspectStatID   uint       `gorm:"not null;index"`
 	AspectStat     AspectStat `gorm:"foreignKey:AspectStatID"`
 	Level          int        `gorm:"not null"`
-	Damage         int        `gorm:"not null"`
-	CriticalDamage int        `gorm:"not null"`
+	Damage         uint       `gorm:"not null"`
+	CriticalDamage uint       `gorm:"not null"`
 	CriticalChance float64    `gorm:"type:decimal(5,2);not null"`
 	GoldMultiplier float64    `gorm:"type:decimal(5,2);not null"`
-	Amount         int        `gorm:"not null"`
+	Amount         uint       `gorm:"not null"`
 	CreatedAt      time.Time  `gorm:"autoCreateTime"`
 	UpdatedAt      time.Time  `gorm:"autoUpdateTime"`
 }

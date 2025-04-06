@@ -16,3 +16,11 @@ type AspectStat struct {
 	CreatedAt          time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt          time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
+
+func (a *AspectStat) TableName() string {
+	return "aspect_stats"
+}
+
+func (a *AspectStat) ModelID() int {
+	return int(a.ID)
+}

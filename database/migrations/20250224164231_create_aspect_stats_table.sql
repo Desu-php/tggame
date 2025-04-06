@@ -4,7 +4,8 @@ CREATE TABLE aspect_stats
 (
     id                   SERIAL PRIMARY KEY,
     aspect_id            INTEGER       NOT NULL REFERENCES aspects (id) ON DELETE CASCADE,
-    level                INTEGER       NOT NULL,
+    start_level          INTEGER       NOT NULL,
+    end_level            INTEGER       NOT NULL,
     damage               INTEGER       NOT NULL,
     critical_damage      INTEGER       NOT NULL,
     critical_chance      DECIMAL(5, 2) NOT NULL,

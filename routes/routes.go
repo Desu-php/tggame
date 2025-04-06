@@ -51,5 +51,8 @@ func RegisterRoutes(
 		api.GET("user/referrals", referralController.GetReferrals)
 		api.GET("user/referrals/count", referralController.GetReferralCount)
 		api.GET("user/info", userController.Info)
+
+		api.POST("aspect/:id/buy", aspectController.Buy)
+		api.PUT("aspect/:id/upgrade", aspectController.Upgrade)
 	}
 }

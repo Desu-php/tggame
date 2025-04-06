@@ -24,8 +24,9 @@ type TransactionType int16
 
 // Возможные значения для TransactionType
 const (
-	TransactionTypeIncome  TransactionType = 1
-	TransactionTypeExpense TransactionType = 2
+	TransactionTypeIncome        TransactionType = 1
+	TransactionTypeBuyAspect     TransactionType = 100
+	TransactionTypeUpgradeAspect TransactionType = 101
 )
 
 // String возвращает строковое представление enum (value receiver)
@@ -33,8 +34,8 @@ func (t *TransactionType) String() string {
 	switch *t {
 	case TransactionTypeIncome:
 		return "income"
-	case TransactionTypeExpense:
-		return "expense"
+	case TransactionTypeBuyAspect:
+		return "buy_aspect"
 	default:
 		return "unknown"
 	}
