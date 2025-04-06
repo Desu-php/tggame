@@ -8,6 +8,7 @@ import (
 	"example.com/v2/internal/responses"
 	"example.com/v2/internal/services"
 	"example.com/v2/pkg/db"
+	"example.com/v2/pkg/errs"
 	"example.com/v2/pkg/image"
 	"example.com/v2/pkg/transaction"
 	"example.com/v2/pkg/utils"
@@ -15,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 	"time"
 )
@@ -65,15 +67,8 @@ func (as *AspectController) Index(c *gin.Context) {
 }
 
 func (as *AspectController) Buy(c *gin.Context) {
-	userData, exists := c.Get("user")
-	if !exists {
-		c.JSON(401, gin.H{"error": "User not found"})
-		return
-	}
-
-	user, ok := userData.(*models.User)
+	user, ok := utils.GetUser(c)
 	if !ok {
-		c.JSON(500, gin.H{"error": "Invalid user data"})
 		return
 	}
 
@@ -164,7 +159,7 @@ func (as *AspectController) Buy(c *gin.Context) {
 		})
 
 		if err != nil {
-			return fmt.Errorf("failed to charge user stat: %w", err)
+			return err
 		}
 
 		err := as.userStatService.Upgrade(ctx, services.UserStatUpgradeDto{
@@ -183,6 +178,11 @@ func (as *AspectController) Buy(c *gin.Context) {
 	})
 
 	if err != nil {
+		if errors.Is(err, errs.ErrInsufficientBalance) {
+			c.JSON(400, gin.H{"error": "Недостаточно средств на балансе"})
+			return
+		}
+
 		as.logger.WithError(err).Error("AspectController::buy")
 		responses.ServerErrorResponse(c)
 		return
@@ -192,15 +192,8 @@ func (as *AspectController) Buy(c *gin.Context) {
 }
 
 func (as *AspectController) Upgrade(c *gin.Context) {
-	userData, exists := c.Get("user")
-	if !exists {
-		c.JSON(401, gin.H{"error": "User not found"})
-		return
-	}
-
-	user, ok := userData.(*models.User)
+	user, ok := utils.GetUser(c)
 	if !ok {
-		c.JSON(500, gin.H{"error": "Invalid user data"})
 		return
 	}
 
@@ -233,6 +226,11 @@ func (as *AspectController) Upgrade(c *gin.Context) {
 		First(&userAspect).Error
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User aspect not found"})
+			return
+		}
+
 		as.logger.WithError(err).Error("AspectController::Upgrade")
 		responses.ServerErrorResponse(c)
 		return
@@ -248,16 +246,8 @@ func (as *AspectController) Upgrade(c *gin.Context) {
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			err = as.db.WithContext(c).
-				Order("end_level desc").
-				Where("end_level <= ?", userAspect.Level).
-				First(&aspectStat, "aspect_id = ?", aspect.ID).Error
-
-			if err != nil {
-				as.logger.WithError(err).Error("AspectController::Upgrade")
-				responses.ServerErrorResponse(c)
-				return
-			}
+			c.JSON(400, gin.H{"error": "Аспект достиг максимального уровня"})
+			return
 		} else {
 			as.logger.WithError(err).Error("AspectController::Upgrade")
 			responses.ServerErrorResponse(c)
@@ -267,6 +257,8 @@ func (as *AspectController) Upgrade(c *gin.Context) {
 
 	err = as.trx.RunInTransaction(c, func(ctx context.Context) error {
 		var amount int64
+
+		log.Println(aspectStat)
 
 		if aspectStat.ID != userAspect.AspectStatID {
 			amount = int64(aspectStat.Amount)
@@ -293,7 +285,7 @@ func (as *AspectController) Upgrade(c *gin.Context) {
 		})
 
 		if err != nil {
-			return fmt.Errorf("failed to charge user stat: %w", err)
+			return err
 		}
 
 		err := as.userStatService.Upgrade(ctx, services.UserStatUpgradeDto{
@@ -312,6 +304,11 @@ func (as *AspectController) Upgrade(c *gin.Context) {
 	})
 
 	if err != nil {
+		if errors.Is(err, errs.ErrInsufficientBalance) {
+			c.JSON(400, gin.H{"error": "Недостаточно средств на балансе"})
+			return
+		}
+
 		as.logger.WithError(err).Error("AspectController::Upgrade")
 		responses.ServerErrorResponse(c)
 		return

@@ -4,6 +4,7 @@ import (
 	"context"
 	"example.com/v2/internal/models"
 	balance "example.com/v2/internal/repository/balance"
+	"example.com/v2/pkg/errs"
 	"example.com/v2/pkg/transaction"
 	"fmt"
 	"math"
@@ -60,7 +61,7 @@ func (s *BalanceService) Charge(ctx context.Context, dto *TransactionDto) error 
 			amount := math.Abs(float64(dto.Amount))
 
 			if (findBalance.Balance - int64(amount)) < 0 {
-				return fmt.Errorf("BalanceService::Charge amount must be greater than zero")
+				return errs.ErrInsufficientBalance
 			}
 
 			dto.Amount = -dto.Amount
