@@ -25,6 +25,7 @@ func RegisterRoutes(
 	referralController *controllers.ReferralController,
 	userController *controllers.UserController,
 	aspectController *controllers.AspectController,
+	userAspectController *controllers.UserAspectController,
 ) {
 
 	game := r.Group("/api/game")
@@ -51,8 +52,10 @@ func RegisterRoutes(
 		api.GET("user/referrals", referralController.GetReferrals)
 		api.GET("user/referrals/count", referralController.GetReferralCount)
 		api.GET("user/info", userController.Info)
+		api.GET("user/aspects", userAspectController.GetAspects)
 
 		api.POST("aspect/:id/buy", aspectController.Buy)
 		api.PUT("aspect/:id/upgrade", aspectController.Upgrade)
+
 	}
 }
