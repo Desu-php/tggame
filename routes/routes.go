@@ -24,7 +24,7 @@ func RegisterRoutes(
 	rarityController *controllers.RarityController,
 	referralController *controllers.ReferralController,
 	userController *controllers.UserController,
-	aspectController *controllers.AspectController,
+	boosterController *controllers.BoosterController,
 	userAspectController *controllers.UserAspectController,
 ) {
 
@@ -41,7 +41,6 @@ func RegisterRoutes(
 	api := r.Group("/api")
 
 	api.GET("rarities", rarityController.GetRarities)
-	api.GET("aspects", aspectController.Index)
 
 	api.Use(middleware.SessionMiddleware(sessionAdapter, logger, userRepository))
 	{
@@ -52,10 +51,11 @@ func RegisterRoutes(
 		api.GET("user/referrals", referralController.GetReferrals)
 		api.GET("user/referrals/count", referralController.GetReferralCount)
 		api.GET("user/info", userController.Info)
-		api.GET("user/aspects", userAspectController.GetAspects)
+		api.GET("user/boosters", userAspectController.GetBoosters)
 
-		api.POST("aspect/:id/buy", aspectController.Buy)
-		api.PUT("aspect/:id/upgrade", aspectController.Upgrade)
+		api.GET("boosters", boosterController.Index)
+		api.POST("booster/:id/buy", boosterController.Buy)
+		api.PUT("booster/:id/upgrade", boosterController.Upgrade)
 
 	}
 }

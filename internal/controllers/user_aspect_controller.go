@@ -21,7 +21,7 @@ func NewUserAspectController(db *db.DB, image *image.Image, logger *logrus.Logge
 	return &UserAspectController{db, image, logger}
 }
 
-func (a *UserAspectController) GetAspects(c *gin.Context) {
+func (a *UserAspectController) GetBoosters(c *gin.Context) {
 	user, ok := utils.GetUser(c)
 
 	if !ok {
@@ -34,11 +34,11 @@ func (a *UserAspectController) GetAspects(c *gin.Context) {
 		Select("aspects.*").
 		Joins("inner join user_aspects ua ON ua.aspect_id = aspects.id").
 		Where("ua.user_id = ?", user.ID).
-		Where("aspects.type = ?", models.Aspects).
+		Where("aspects.type = ?", models.Booster).
 		Find(&aspects).Error
 
 	if err != nil {
-		a.logger.WithError(err).Error("UserAspectController::GetAspects failed")
+		a.logger.WithError(err).Error("UserAspectController::GetBoosters failed")
 	}
 
 	responses.OkResponse(c, gin.H{

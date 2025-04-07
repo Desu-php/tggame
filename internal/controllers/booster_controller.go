@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"example.com/v2/internal/http/resources"
+	responses2 "example.com/v2/internal/http/responses"
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/responses"
 	"example.com/v2/internal/services"
@@ -21,7 +22,7 @@ import (
 	"time"
 )
 
-type AspectController struct {
+type BoosterController struct {
 	logger          *logrus.Logger
 	image           *image.Image
 	db              *db.DB
@@ -30,15 +31,15 @@ type AspectController struct {
 	balanceService  *services.BalanceService
 }
 
-func NewAspectController(
+func NewBoosterController(
 	logger *logrus.Logger,
 	image *image.Image,
 	db *db.DB,
 	trx transaction.TransactionManager,
 	userStatService *services.UserStatService,
 	balanceService *services.BalanceService,
-) *AspectController {
-	return &AspectController{
+) *BoosterController {
+	return &BoosterController{
 		logger,
 		image,
 		db,
@@ -48,25 +49,63 @@ func NewAspectController(
 	}
 }
 
-func (as *AspectController) Index(c *gin.Context) {
-	var aspects []models.Aspect
+func (as *BoosterController) Index(c *gin.Context) {
+	user, ok := utils.GetUser(c)
+	if !ok {
+		return
+	}
+
+	as.db.WithContext(c).Model(models.UserAspect{}).First(&user)
+
+	var aspects []responses2.AspectWithStatsResponse
 
 	err := as.db.WithContext(c).
-		Model(models.Aspect{}).
-		Find(&aspects).Error
+		Raw(`
+SELECT
+  a.id,
+  a.name,
+  a.image,
+  a.description,
+  ua.level AS user_level,
+  ast.id as aspect_stat_id,
+  ast.damage,
+  ast.critical_damage,
+  ast.critical_chance,
+  ast.gold_multiplier,
+  ast.amount
+FROM aspects a
+LEFT JOIN user_aspects ua ON ua.aspect_id = a.id AND ua.user_id = ?
+LEFT JOIN LATERAL (
+  SELECT *
+  FROM aspect_stats ast
+  WHERE ast.aspect_id = a.id
+    AND (
+      (ua.level BETWEEN ast.start_level AND ast.end_level)
+      OR ua.level IS NULL
+    )
+  ORDER BY
+    CASE
+      WHEN ua.level BETWEEN ast.start_level AND ast.end_level THEN 0
+      ELSE 1
+    END,
+    start_level
+  LIMIT 1
+) ast ON true
+WHERE a.type = ?
+`, user.ID, models.Booster).Scan(&aspects).Error
 
 	if err != nil {
-		as.logger.WithError(err).Error("AspectController::index")
+		as.logger.WithError(err).Error("BoosterController::index")
 		responses.ServerErrorResponse(c)
 		return
 	}
 
 	responses.OkResponse(c, gin.H{
-		"data": resources.NewBaseResource(resources.NewAspectResource(as.image)).All(aspects),
+		"data": resources.NewBaseResource(resources.NewAspectWithStatsResource(as.image)).All(aspects),
 	})
 }
 
-func (as *AspectController) Buy(c *gin.Context) {
+func (as *BoosterController) Buy(c *gin.Context) {
 	user, ok := utils.GetUser(c)
 	if !ok {
 		return
@@ -80,17 +119,17 @@ func (as *AspectController) Buy(c *gin.Context) {
 	}
 
 	var aspect models.Aspect
-	aspectType := models.Aspects
+	aspectType := models.Booster
 
 	err := as.db.WithContext(c).
 		Where("type = ?", aspectType).
 		First(&aspect, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Aspect not found"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Booster not found"})
 			return
 		}
-		as.logger.WithError(err).Error("AspectController::buy")
+		as.logger.WithError(err).Error("BoosterController::buy")
 		responses.ServerErrorResponse(c)
 		return
 	}
@@ -102,12 +141,12 @@ func (as *AspectController) Buy(c *gin.Context) {
 
 	if err == nil {
 		c.JSON(http.StatusConflict, gin.H{
-			"error": "User already owns this aspect",
-			"code":  "aspect_already_owned",
+			"error": "User already owns this booster",
+			"code":  "booster_already_owned",
 		})
 		return
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		as.logger.WithError(err).Error("AspectController::buy")
+		as.logger.WithError(err).Error("BoosterController::buy")
 		responses.ServerErrorResponse(c)
 		return
 	}
@@ -121,12 +160,12 @@ func (as *AspectController) Buy(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{
-				"error":   "Aspect stats not found",
-				"details": fmt.Sprintf("No stats found for aspect ID: %s", aspect.ID),
+				"error":   "Booster stats not found",
+				"details": fmt.Sprintf("No stats found for booster ID: %s", aspect.ID),
 			})
 			return
 		}
-		as.logger.WithError(err).Error("AspectController::buy")
+		as.logger.WithError(err).Error("BoosterController::buy")
 		responses.ServerErrorResponse(c)
 		return
 	}
@@ -183,7 +222,7 @@ func (as *AspectController) Buy(c *gin.Context) {
 			return
 		}
 
-		as.logger.WithError(err).Error("AspectController::buy")
+		as.logger.WithError(err).Error("BoosterController::buy")
 		responses.ServerErrorResponse(c)
 		return
 	}
@@ -191,7 +230,7 @@ func (as *AspectController) Buy(c *gin.Context) {
 	responses.OkResponse(c, gin.H{})
 }
 
-func (as *AspectController) Upgrade(c *gin.Context) {
+func (as *BoosterController) Upgrade(c *gin.Context) {
 	user, ok := utils.GetUser(c)
 	if !ok {
 		return
@@ -205,17 +244,17 @@ func (as *AspectController) Upgrade(c *gin.Context) {
 	}
 
 	var aspect models.Aspect
-	aspectType := models.Aspects
+	aspectType := models.Booster
 
 	err := as.db.WithContext(c).
 		Where("type = ?", aspectType).
 		First(&aspect, "id = ?", id).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Aspect not found"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Booster not found"})
 			return
 		}
-		as.logger.WithError(err).Error("AspectController::Upgrade")
+		as.logger.WithError(err).Error("BoosterController::Upgrade")
 		responses.ServerErrorResponse(c)
 		return
 	}
@@ -231,7 +270,7 @@ func (as *AspectController) Upgrade(c *gin.Context) {
 			return
 		}
 
-		as.logger.WithError(err).Error("AspectController::Upgrade")
+		as.logger.WithError(err).Error("BoosterController::Upgrade")
 		responses.ServerErrorResponse(c)
 		return
 	}
@@ -246,10 +285,10 @@ func (as *AspectController) Upgrade(c *gin.Context) {
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(400, gin.H{"error": "Аспект достиг максимального уровня"})
+			c.JSON(400, gin.H{"error": "Бустер достиг максимального уровня"})
 			return
 		} else {
-			as.logger.WithError(err).Error("AspectController::Upgrade")
+			as.logger.WithError(err).Error("BoosterController::Upgrade")
 			responses.ServerErrorResponse(c)
 			return
 		}
@@ -309,7 +348,7 @@ func (as *AspectController) Upgrade(c *gin.Context) {
 			return
 		}
 
-		as.logger.WithError(err).Error("AspectController::Upgrade")
+		as.logger.WithError(err).Error("BoosterController::Upgrade")
 		responses.ServerErrorResponse(c)
 		return
 	}

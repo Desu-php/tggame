@@ -74,3 +74,14 @@ type AspectResponse struct {
 	Description string `json:"description"`
 	Image       string `json:"image"`
 }
+
+type AspectWithStatsResponse struct {
+	AspectResponse
+	UserLevel      uint    `json:"user_level,omitempty"`
+	AspectStatId   uint    `json:"aspect_stat_id,omitempty"`
+	Damage         uint    `json:"damage,omitempty"`
+	CriticalDamage uint    `json:"critical_damage,omitempty"`
+	CriticalChance float64 `json:"critical_change,omitempty"`
+	GoldMultiplier float64 `json:"gold_multiplier,omitempty"`
+	Amount         uint    `json:"amount,omitempty"`
+}
