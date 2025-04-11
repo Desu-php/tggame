@@ -72,7 +72,8 @@ SELECT
   ast.critical_damage,
   ast.critical_chance,
   ast.gold_multiplier,
-  ast.amount
+  ast.amount,
+  ast.amount_growth_factor
 FROM aspects a
 LEFT JOIN user_aspects ua ON ua.aspect_id = a.id AND ua.user_id = ?
 LEFT JOIN LATERAL (

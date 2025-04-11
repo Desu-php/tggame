@@ -3,6 +3,7 @@ package resources
 import (
 	"example.com/v2/internal/http/responses"
 	"example.com/v2/pkg/image"
+	"example.com/v2/pkg/utils"
 )
 
 type AspectWithStatsResource struct {
@@ -15,6 +16,7 @@ func NewAspectWithStatsResource(image *image.Image) *AspectWithStatsResource {
 
 func (r *AspectWithStatsResource) Map(object *responses.AspectWithStatsResponse) *responses.AspectWithStatsResponse {
 	object.Image = r.image.Url(object.Image)
+	object.Amount = uint(utils.GrowthIncrease(float64(object.Amount), object.AmountGrowthFactor))
 
 	return object
 }
