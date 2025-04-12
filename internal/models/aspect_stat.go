@@ -13,6 +13,7 @@ type AspectStat struct {
 	GoldMultiplier     float64
 	Amount             uint
 	AmountGrowthFactor float64
+	PassiveDamage      uint
 	CreatedAt          time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt          time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 }
