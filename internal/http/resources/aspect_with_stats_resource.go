@@ -16,7 +16,10 @@ func NewAspectWithStatsResource(image *image.Image) *AspectWithStatsResource {
 
 func (r *AspectWithStatsResource) Map(object *responses.AspectWithStatsResponse) *responses.AspectWithStatsResponse {
 	object.Image = r.image.Url(object.Image)
-	object.Amount = uint(utils.GrowthIncrease(float64(object.Amount), object.AmountGrowthFactor))
+
+	if object.UserLevel != 0 {
+		object.Amount = uint(utils.GrowthIncrease(float64(object.Amount), object.AmountGrowthFactor))
+	}
 
 	return object
 }

@@ -17,7 +17,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"log"
 	"net/http"
 	"time"
 )
@@ -72,7 +71,11 @@ SELECT
   ast.critical_damage,
   ast.critical_chance,
   ast.gold_multiplier,
-  ast.amount,
+  CASE
+    WHEN ua.amount IS NULL THEN ast.amount
+    WHEN ast.amount IS NULL THEN ua.amount
+    ELSE GREATEST(ua.amount, ast.amount)
+  END AS amount,
   ast.amount_growth_factor
 FROM aspects a
 LEFT JOIN user_aspects ua ON ua.aspect_id = a.id AND ua.user_id = ?
@@ -81,12 +84,12 @@ LEFT JOIN LATERAL (
   FROM aspect_stats ast
   WHERE ast.aspect_id = a.id
     AND (
-      (ua.level BETWEEN ast.start_level AND ast.end_level)
+      (ua.level + 1 >= ast.start_level AND ua.level + 1 <= ast.end_level)
       OR ua.level IS NULL
     )
   ORDER BY
     CASE
-      WHEN ua.level BETWEEN ast.start_level AND ast.end_level THEN 0
+      WHEN ua.level + 1 BETWEEN ast.start_level AND ast.end_level THEN 0
       ELSE 1
     END,
     start_level
@@ -297,8 +300,6 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 
 	err = as.trx.RunInTransaction(c, func(ctx context.Context) error {
 		var amount int64
-
-		log.Println(aspectStat)
 
 		if aspectStat.ID != userAspect.AspectStatID {
 			amount = int64(aspectStat.Amount)
