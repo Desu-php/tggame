@@ -85,4 +85,5 @@ type AspectWithStatsResponse struct {
 	GoldMultiplier     float64 `json:"gold_multiplier,omitempty"`
 	Amount             uint    `json:"amount,omitempty"`
 	AmountGrowthFactor float64 `json:"-"`
+	PassiveDamage      uint    `json:"passive_damage,omitempty"`
 }

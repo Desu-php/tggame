@@ -34,4 +34,5 @@ var Module = fx.Provide(
 	NewBalanceRepository,
 	balance.NewTransactionRepository,
 	balance.NewBalanceRepository,
+	NewAspectRepository,
 )

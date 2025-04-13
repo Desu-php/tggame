@@ -22,3 +22,7 @@ func ServerErrorResponse(c *gin.Context) {
 func ServerErrorResponseWithMessage(c *gin.Context, obj any) {
 	c.JSON(http.StatusInternalServerError, obj)
 }
+
+func NotFound(c *gin.Context) {
+	c.JSON(http.StatusNotFound, "Not Found")
+}

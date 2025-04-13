@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"example.com/v2/internal/http/resources"
-	responses2 "example.com/v2/internal/http/responses"
 	"example.com/v2/internal/models"
+	"example.com/v2/internal/repository"
 	"example.com/v2/internal/responses"
 	"example.com/v2/internal/services"
 	"example.com/v2/pkg/db"
@@ -18,16 +18,18 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type BoosterController struct {
-	logger          *logrus.Logger
-	image           *image.Image
-	db              *db.DB
-	trx             transaction.TransactionManager
-	userStatService *services.UserStatService
-	balanceService  *services.BalanceService
+	logger           *logrus.Logger
+	image            *image.Image
+	db               *db.DB
+	trx              transaction.TransactionManager
+	userStatService  *services.UserStatService
+	balanceService   *services.BalanceService
+	aspectRepository repository.AspectRepository
 }
 
 func NewBoosterController(
@@ -37,6 +39,7 @@ func NewBoosterController(
 	trx transaction.TransactionManager,
 	userStatService *services.UserStatService,
 	balanceService *services.BalanceService,
+	aspectRepository repository.AspectRepository,
 ) *BoosterController {
 	return &BoosterController{
 		logger,
@@ -45,6 +48,7 @@ func NewBoosterController(
 		trx,
 		userStatService,
 		balanceService,
+		aspectRepository,
 	}
 }
 
@@ -54,52 +58,17 @@ func (as *BoosterController) Index(c *gin.Context) {
 		return
 	}
 
-	as.db.WithContext(c).Model(models.UserAspect{}).First(&user)
+	aspectType := c.Param("type")
 
-	var aspects []responses2.AspectWithStatsResponse
+	if IsValidAspectType(aspectType) == false {
+		responses.NotFound(c)
+		return
+	}
 
-	err := as.db.WithContext(c).
-		Raw(`
-SELECT
-  a.id,
-  a.name,
-  a.image,
-  a.description,
-  ua.level AS user_level,
-  ast.id as aspect_stat_id,
-  ast.damage,
-  ast.critical_damage,
-  ast.critical_chance,
-  ast.gold_multiplier,
-  CASE
-    WHEN ua.amount IS NULL THEN ast.amount
-    WHEN ast.amount IS NULL THEN ua.amount
-    ELSE GREATEST(ua.amount, ast.amount)
-  END AS amount,
-  ast.amount_growth_factor
-FROM aspects a
-LEFT JOIN user_aspects ua ON ua.aspect_id = a.id AND ua.user_id = ?
-LEFT JOIN LATERAL (
-  SELECT *
-  FROM aspect_stats ast
-  WHERE ast.aspect_id = a.id
-    AND (
-      (ua.level + 1 >= ast.start_level AND ua.level + 1 <= ast.end_level)
-      OR ua.level IS NULL
-    )
-  ORDER BY
-    CASE
-      WHEN ua.level + 1 BETWEEN ast.start_level AND ast.end_level THEN 0
-      ELSE 1
-    END,
-    start_level
-  LIMIT 1
-) ast ON true
-WHERE a.type = ?
-`, user.ID, models.Booster).Scan(&aspects).Error
+	aspects, err := as.aspectRepository.GetUserAspectByType(c, user, models.AspectType(aspectType))
 
 	if err != nil {
-		as.logger.WithError(err).Error("BoosterController::index")
+		as.logger.WithError(err).Error("BoosterController::Index")
 		responses.ServerErrorResponse(c)
 		return
 	}
@@ -107,6 +76,15 @@ WHERE a.type = ?
 	responses.OkResponse(c, gin.H{
 		"data": resources.NewBaseResource(resources.NewAspectWithStatsResource(as.image)).All(aspects),
 	})
+}
+
+func IsValidAspectType(t string) bool {
+	switch models.AspectType(t) {
+	case models.Aspects, models.Booster:
+		return true
+	default:
+		return false
+	}
 }
 
 func (as *BoosterController) Buy(c *gin.Context) {
@@ -122,17 +100,21 @@ func (as *BoosterController) Buy(c *gin.Context) {
 		return
 	}
 
-	var aspect models.Aspect
-	aspectType := models.Booster
+	uid, err := strconv.ParseUint(id, 10, 0)
 
-	err := as.db.WithContext(c).
-		Where("type = ?", aspectType).
-		First(&aspect, "id = ?", id).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Booster not found"})
-			return
-		}
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID is integer"})
+		return
+	}
+
+	aspect, err := as.aspectRepository.FindByID(c, uint(uid), models.Booster)
+
+	if err == nil && aspect == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Booster not found"})
+		return
+	}
+
+	if err != nil {
 		as.logger.WithError(err).Error("BoosterController::buy")
 		responses.ServerErrorResponse(c)
 		return
@@ -205,12 +187,13 @@ func (as *BoosterController) Buy(c *gin.Context) {
 			return err
 		}
 
-		err := as.userStatService.Upgrade(ctx, services.UserStatUpgradeDto{
+		err = as.userStatService.Upgrade(ctx, services.UserStatUpgradeDto{
 			Damage:         newUserAspect.Damage,
 			CriticalDamage: newUserAspect.CriticalDamage,
 			CriticalChance: newUserAspect.CriticalChance,
 			GoldMultiplier: newUserAspect.GoldMultiplier,
 			User:           user,
+			PassiveDamage:  newUserAspect.PassiveDamage,
 		})
 
 		if err != nil {
@@ -329,7 +312,7 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 			return err
 		}
 
-		err := as.userStatService.Upgrade(ctx, services.UserStatUpgradeDto{
+		err = as.userStatService.Upgrade(ctx, services.UserStatUpgradeDto{
 			Damage:         aspectStat.Damage,
 			CriticalDamage: aspectStat.CriticalDamage,
 			CriticalChance: aspectStat.CriticalChance,

@@ -26,6 +26,7 @@ func RegisterRoutes(
 	userController *controllers.UserController,
 	boosterController *controllers.BoosterController,
 	userAspectController *controllers.UserAspectController,
+	aspectController *controllers.AspectController,
 ) {
 
 	game := r.Group("/api/game")
@@ -53,9 +54,9 @@ func RegisterRoutes(
 		api.GET("user/info", userController.Info)
 		api.GET("user/boosters", userAspectController.GetBoosters)
 
-		api.GET("boosters", boosterController.Index)
+		api.GET("boosters/:type", boosterController.Index)
 		api.POST("booster/:id/buy", boosterController.Buy)
 		api.PUT("booster/:id/upgrade", boosterController.Upgrade)
-
+		api.POST("aspect/:id/active", aspectController.Store)
 	}
 }

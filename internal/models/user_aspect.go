@@ -16,6 +16,7 @@ type UserAspect struct {
 	CriticalChance float64    `gorm:"type:decimal(5,2);not null"`
 	GoldMultiplier float64    `gorm:"type:decimal(5,2);not null"`
 	Amount         uint       `gorm:"not null"`
+	PassiveDamage  uint       `gorm:"default:0" json:"passive_damage"`
 	CreatedAt      time.Time  `gorm:"autoCreateTime"`
 	UpdatedAt      time.Time  `gorm:"autoUpdateTime"`
 }
