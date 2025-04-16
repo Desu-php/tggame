@@ -18,6 +18,7 @@ type UserChestService struct {
 	itemService          *services.ItemService
 	userItemService      *UserItemService
 	balanceService       *BalanceService
+	userStatRepo         repository.UserStatRepository
 }
 
 func NewUserChestService(
@@ -28,6 +29,7 @@ func NewUserChestService(
 	itemService *services.ItemService,
 	userItemService *UserItemService,
 	balanceService *BalanceService,
+	userStatRepo repository.UserStatRepository,
 ) *UserChestService {
 	return &UserChestService{
 		userChestRepo:        userChestRepo,
@@ -37,6 +39,7 @@ func NewUserChestService(
 		itemService:          itemService,
 		userItemService:      userItemService,
 		balanceService:       balanceService,
+		userStatRepo:         userStatRepo,
 	}
 }
 
@@ -154,8 +157,20 @@ func (s *UserChestService) replenish(ctx context.Context, uc *models.UserChest, 
 		return nil
 	}
 
-	err := s.balanceService.Replenish(ctx, &TransactionDto{
-		Amount: int64(uc.Amount),
+	userStat, err := s.userStatRepo.GetStat(ctx, user)
+
+	if err != nil {
+		return fmt.Errorf("UserChestService::replenish err %w", err)
+	}
+
+	amount := int64(uc.Amount)
+
+	if userStat.GoldMultiplier > 0 {
+		amount = int64(utils.GrowthIncrease(float64(amount), userStat.GoldMultiplier))
+	}
+
+	err = s.balanceService.Replenish(ctx, &TransactionDto{
+		Amount: amount,
 		User:   user,
 		Model:  uc,
 		Type:   models.TransactionTypeIncome,

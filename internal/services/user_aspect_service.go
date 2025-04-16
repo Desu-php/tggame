@@ -53,8 +53,8 @@ func (s *UserAspectService) SetAspect(c context.Context, user *models.User, aspe
 				403,
 				fmt.Sprintf("Аспект уже активный"),
 			)
-		} else if time.Since(userAspect.CreatedAt) < 30*24*time.Hour {
-			nextAvailable := userAspect.CreatedAt.Add(30 * 24 * time.Hour)
+		} else if time.Since(userAspect.CreatedAt) < 7*24*time.Hour {
+			nextAvailable := userAspect.CreatedAt.Add(7 * 24 * time.Hour)
 
 			return errs.NewAPIError(
 				403,
