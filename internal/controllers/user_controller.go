@@ -13,6 +13,7 @@ type UserController struct {
 	auth               *auth.AuthService
 	userStatRepository repository.UserStatRepository
 	balanceRepository  repository.BalanceRepository
+	userRepository     repository.UserRepository
 }
 
 func NewUserController(
@@ -20,12 +21,14 @@ func NewUserController(
 	auth *auth.AuthService,
 	userStatRepository repository.UserStatRepository,
 	balanceRepository repository.BalanceRepository,
+	userRepository repository.UserRepository,
 ) *UserController {
 	return &UserController{
 		logger:             logger,
 		auth:               auth,
 		userStatRepository: userStatRepository,
 		balanceRepository:  balanceRepository,
+		userRepository:     userRepository,
 	}
 }
 
@@ -57,5 +60,19 @@ func (uc *UserController) Info(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"stats":   userStat,
 		"balance": balance.Balance,
+	})
+}
+
+func (uc *UserController) GetTop(c *gin.Context) {
+	users, err := uc.userRepository.GetTop(c)
+
+	if err != nil {
+		uc.logger.WithError(err).Error("UserController::GetTop")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": users,
 	})
 }

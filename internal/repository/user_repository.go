@@ -18,6 +18,7 @@ type UserRepository interface {
 	FindByTgId(ctx context.Context, id uint64) (*models.User, error)
 	UpdateSession(ctx context.Context, user *models.User, session string) error
 	FindWithoutPreloadingByTgId(ctx context.Context, id uint64) (*models.User, error)
+	GetTop(ctx context.Context) ([]TopUserDTO, error)
 }
 
 type userRepository struct {
@@ -29,6 +30,11 @@ type userRepository struct {
 type CreateUserDTO struct {
 	Username   string
 	TelegramID uint64
+}
+
+type TopUserDTO struct {
+	Username string `json:"username"`
+	Level    uint   `json:"level"`
 }
 
 func NewUserRepository(
@@ -133,4 +139,22 @@ func (r *userRepository) UpdateSession(ctx context.Context, user *models.User, s
 	}
 
 	return nil
+}
+
+func (r *userRepository) GetTop(ctx context.Context) ([]TopUserDTO, error) {
+	var users []TopUserDTO
+
+	err := r.db.WithContext(ctx).
+		Model(models.UserChest{}).
+		Select("u.username, user_chests.level").
+		Joins("inner join users as u on u.id = user_chests.user_id").
+		Order("user_chests.level desc").
+		Limit(100).
+		Find(&users).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("GetTop: err %w", err)
+	}
+
+	return users, nil
 }

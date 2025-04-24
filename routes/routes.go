@@ -42,6 +42,7 @@ func RegisterRoutes(
 	api := r.Group("/api")
 
 	api.GET("rarities", rarityController.GetRarities)
+	api.GET("top/users", userController.GetTop)
 
 	api.Use(middleware.SessionMiddleware(sessionAdapter, logger, userRepository))
 	{
