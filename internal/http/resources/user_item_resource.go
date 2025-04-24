@@ -28,7 +28,12 @@ func (r *UserItemResource) Map(object *models.UserItem) *responses.UserItemRespo
 				Name:        object.Item.Type.Name,
 				Description: object.Item.Type.Description,
 			},
-			Description: object.Item.Description,
+			Description:    object.Item.Description,
+			Damage:         object.Item.Damage,
+			CriticalDamage: object.Item.CriticalDamage,
+			CriticalChance: object.Item.CriticalChance,
+			GoldMultiplier: object.Item.GoldMultiplier,
+			PassiveDamage:  object.Item.PassiveDamage,
 		},
 		CreatedAt: time.Time{},
 	}

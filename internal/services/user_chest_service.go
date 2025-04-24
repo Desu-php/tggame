@@ -86,7 +86,7 @@ func (s *UserChestService) LevelUp(ctx context.Context, userChest *models.UserCh
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
 		}
 
-		_, err = s.userItemService.SetUserItem(ctx, userChest.UserID, item, userChestHistory)
+		_, err = s.userItemService.SetUserItem(ctx, user, item, userChestHistory)
 
 		if err != nil {
 			return fmt.Errorf("UserChestService::LevelUp %w", err)

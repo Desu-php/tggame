@@ -40,12 +40,17 @@ type ItemTypeResponse struct {
 }
 
 type ItemResponse struct {
-	ID          uint              `json:"id"`
-	Name        string            `json:"name"`
-	Rarity      *RarityResponse   `json:"rarity"`
-	Image       string            `json:"image"`
-	Type        *ItemTypeResponse `json:"type"`
-	Description string            `json:"description"`
+	ID             uint              `json:"id"`
+	Name           string            `json:"name"`
+	Rarity         *RarityResponse   `json:"rarity"`
+	Image          string            `json:"image"`
+	Type           *ItemTypeResponse `json:"type"`
+	Description    string            `json:"description"`
+	Damage         uint              `json:"damage"`
+	CriticalDamage uint              `json:"critical_damage"`
+	CriticalChance float64           `json:"critical_chance"`
+	GoldMultiplier float64           `json:"gold_multiplier"`
+	PassiveDamage  uint              `json:"passive_damage"`
 }
 
 type UserItemResponse struct {
@@ -55,12 +60,17 @@ type UserItemResponse struct {
 }
 
 type GroupedUserItemResponse struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
-	Count  int    `json:"count"`
-	Type   string `json:"type"`
-	Rarity string `json:"rarity"`
-	Image  string `json:"image"`
+	ID             int     `json:"id"`
+	Name           string  `json:"name"`
+	Count          int     `json:"count"`
+	Type           string  `json:"type"`
+	Rarity         string  `json:"rarity"`
+	Image          string  `json:"image"`
+	Damage         uint    `json:"damage"`
+	CriticalDamage uint    `json:"critical_damage"`
+	CriticalChance float64 `json:"critical_chance"`
+	GoldMultiplier float64 `json:"gold_multiplier"`
+	PassiveDamage  uint    `json:"passive_damage"`
 }
 
 type ReferralUserResponse struct {

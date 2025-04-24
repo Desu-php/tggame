@@ -16,11 +16,16 @@ func NewGroupedUserItemResource(image *image.Image) *GroupedUserItemResource {
 
 func (r *GroupedUserItemResource) Map(object *repository.GroupedUserItem) *responses.GroupedUserItemResponse {
 	return &responses.GroupedUserItemResponse{
-		ID:     object.ID,
-		Name:   object.Name,
-		Count:  object.Count,
-		Type:   object.Type,
-		Rarity: object.Rarity,
-		Image:  r.image.Url(object.Image),
+		ID:             object.ID,
+		Name:           object.Name,
+		Count:          object.Count,
+		Type:           object.Type,
+		Rarity:         object.Rarity,
+		Image:          r.image.Url(object.Image),
+		Damage:         object.Damage,
+		CriticalDamage: object.CriticalDamage,
+		CriticalChance: object.CriticalChance,
+		GoldMultiplier: object.GoldMultiplier,
+		PassiveDamage:  object.PassiveDamage,
 	}
 }

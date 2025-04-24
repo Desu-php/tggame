@@ -1,0 +1,22 @@
+# air.toml
+
+# Папки, которые нужно исключить
+exclude_dir = ["vendor", "node_modules", "tmp"]
+
+# Отслеживаемые расширения
+include_ext = ["go"]
+
+# Расширения и файлы, которые игнорировать
+exclude_file = ["air.toml"]
+
+# Цветной вывод
+colors = true
+
+# Сборка с полной командой
+build = "go build -o tmp/main ./cmd/main.go"
+
+# Путь до бинарника, который запускается
+bin = "tmp/main"
+
+# Говорим Air, что запускать именно bin (а не через go run и т.п.)
+full_bin = true
