@@ -161,6 +161,8 @@ func (cc *CraftController) Craft(c *gin.Context) {
 		Model(&models.Item{}).
 		Where("rarity_id = ?", itemRarity.ID).
 		Order("RANDOM()").
+		Preload("Rarity").
+		Preload("Type").
 		Limit(1).
 		First(&randomItem).Error
 
@@ -229,7 +231,7 @@ func (cc *CraftController) Craft(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"success": "Not enough items for crafting"})
+	c.JSON(200, gin.H{"data": randomItem})
 }
 
 func craftRandomizer(betterRarity *models.Rarity, sameRarity *models.Rarity) *models.Rarity {
