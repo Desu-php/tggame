@@ -39,7 +39,13 @@ func NewUserItemRepository(db *db.DB) UserItemRepository {
 }
 
 func (r *userItemRepository) SetUserItem(ctx context.Context, userID uint, item *models.Item, userChestHistory *models.UserChestHistory) (*models.UserItem, error) {
-	userItem := &models.UserItem{UserID: userID, ItemID: item.ID, UserChestHistoryID: userChestHistory.ID}
+	var userChestHistoryID *uint = nil
+
+	if userChestHistory != nil {
+		userChestHistoryID = &userChestHistory.ID
+	}
+
+	userItem := &models.UserItem{UserID: userID, ItemID: item.ID, UserChestHistoryID: userChestHistoryID}
 
 	result := r.db.WithContext(ctx).Create(userItem)
 

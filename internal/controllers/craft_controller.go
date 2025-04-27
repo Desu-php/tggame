@@ -19,6 +19,7 @@ type CraftController struct {
 	db              *db.DB
 	trx             transaction.TransactionManager
 	userItemService *services.UserItemService
+	userStatService *services.UserStatService
 }
 
 type ItemInput struct {
@@ -35,8 +36,20 @@ type UserItemCount struct {
 	Count  uint `json:"count"`
 }
 
-func NewCraftController(logger *logrus.Logger, db *db.DB, trx transaction.TransactionManager, userItemService *services.UserItemService) *CraftController {
-	return &CraftController{logger, db, trx, userItemService}
+func NewCraftController(
+	logger *logrus.Logger,
+	db *db.DB,
+	trx transaction.TransactionManager,
+	userItemService *services.UserItemService,
+	userStatService *services.UserStatService,
+) *CraftController {
+	return &CraftController{
+		logger,
+		db,
+		trx,
+		userItemService,
+		userStatService,
+	}
 }
 
 func (cc *CraftController) Craft(c *gin.Context) {
@@ -108,11 +121,13 @@ func (cc *CraftController) Craft(c *gin.Context) {
 		return
 	}
 
+	var itemsMap = make(map[uint]uint)
 	for _, input := range itemInputs.Items {
 		hasEnough := false
 		for _, userItem := range userItems {
 			if userItem.ItemID == input.ItemID {
 				if userItem.Count >= input.Count {
+					itemsMap[input.ItemID] = userItem.Count - input.Count
 					hasEnough = true
 				}
 				break
@@ -142,7 +157,7 @@ func (cc *CraftController) Craft(c *gin.Context) {
 
 	var randomItem models.Item
 
-	err := cc.db.WithContext(c).
+	err = cc.db.WithContext(c).
 		Model(&models.Item{}).
 		Where("rarity_id = ?", itemRarity.ID).
 		Order("RANDOM()").
@@ -155,9 +170,64 @@ func (cc *CraftController) Craft(c *gin.Context) {
 		return
 	}
 
-	cc.trx.RunInTransaction(c, func(ctx context.Context) error {
-		cc.userItemService.SetUserItem(ctx, user, &randomItem, "")
+	err = cc.trx.RunInTransaction(c, func(ctx context.Context) error {
+		for _, item := range itemInputs.Items {
+			var ids []uint
+			err = cc.db.Model(&models.UserItem{}).
+				Where("user_id = ?", user.ID).
+				Where("item_id = ?", item.ItemID).
+				Limit(int(item.Count)).
+				Pluck("id", &ids).Error
+
+			if err != nil {
+				return err
+			}
+
+			if len(ids) > 0 {
+				err = cc.db.Delete(&models.UserItem{}, ids).Error
+				if err != nil {
+					return err
+				}
+			}
+
+			if itemsMap[item.ItemID] == 0 {
+				var downgradeItem models.Item
+
+				err = cc.db.Model(&models.Item{}).First(&downgradeItem, item.ItemID).Error
+
+				if err != nil {
+					return err
+				}
+
+				err = cc.userStatService.Downgrade(ctx, services.UserStatUpgradeDto{
+					Damage:         downgradeItem.Damage,
+					CriticalDamage: downgradeItem.CriticalDamage,
+					CriticalChance: downgradeItem.CriticalChance,
+					GoldMultiplier: downgradeItem.GoldMultiplier,
+					PassiveDamage:  downgradeItem.PassiveDamage,
+					User:           user,
+				})
+
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		_, err = cc.userItemService.SetUserItem(ctx, user, &randomItem, nil)
+
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
+
+	if err != nil {
+		cc.logger.WithError(err).Error("CraftController::Craft")
+		responses.ServerErrorResponse(c)
+		return
+	}
 
 	c.JSON(200, gin.H{"success": "Not enough items for crafting"})
 }

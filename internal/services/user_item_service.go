@@ -6,7 +6,6 @@ import (
 	"example.com/v2/internal/repository"
 	"example.com/v2/pkg/transaction"
 	"fmt"
-	"log"
 )
 
 type UserItemService struct {
@@ -38,7 +37,6 @@ func (s *UserItemService) SetUserItem(ctx context.Context, user *models.User, it
 	var userItem *models.UserItem
 
 	err = s.trx.RunInTransaction(ctx, func(ctx context.Context) error {
-		log.Println("SetUserItem", exists)
 		if exists == false {
 			err = s.UserStatService.Upgrade(ctx, UserStatUpgradeDto{
 				Damage:         item.Damage,
