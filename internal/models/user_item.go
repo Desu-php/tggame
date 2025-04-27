@@ -1,6 +1,7 @@
 package models
 
 import (
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -14,4 +15,5 @@ type UserItem struct {
 	Item               Item             `gorm:"foreignKey:ItemID" json:"item"`
 	User               User             `gorm:"foreignKey:UserID" json:"user"`
 	UserChestHistory   UserChestHistory `gorm:"foreignKey:UserChestHistoryID" json:"user_chest_history"`
+	DeletedAt          gorm.DeletedAt
 }

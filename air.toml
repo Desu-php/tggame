@@ -13,10 +13,10 @@ exclude_file = ["air.toml"]
 colors = true
 
 # Сборка с полной командой
-build = "go build -o tmp/main ./cmd/main.go"
+build = "go run ./cmd/main.go"
 
 # Путь до бинарника, который запускается
 bin = "tmp/main"
 
 # Говорим Air, что запускать именно bin (а не через go run и т.п.)
-full_bin = true
+full_bin = false

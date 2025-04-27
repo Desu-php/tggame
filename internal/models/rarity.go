@@ -13,4 +13,5 @@ type Rarity struct {
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`      // Время обновления
 	Color       string    `gorm:"type:varchar(255);not null" json:"color"`
 	Sort        int       `gorm:"not null" json:"sort"`
+	CraftChance float64   `gorm:"not null" json:"craft_chance"`
 }
