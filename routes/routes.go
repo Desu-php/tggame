@@ -28,6 +28,7 @@ func RegisterRoutes(
 	userAspectController *controllers.UserAspectController,
 	aspectController *controllers.AspectController,
 	craftController *controllers.CraftController,
+	itemController *controllers.ItemController,
 ) {
 
 	game := r.Group("/api/game")
@@ -43,7 +44,10 @@ func RegisterRoutes(
 	api := r.Group("/api")
 
 	api.GET("rarities", rarityController.GetRarities)
+
 	api.GET("top/users", userController.GetTop)
+
+	api.GET("items", itemController.GetItems)
 
 	api.Use(middleware.SessionMiddleware(sessionAdapter, logger, userRepository))
 	{
