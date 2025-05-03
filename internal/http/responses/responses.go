@@ -18,8 +18,8 @@ type ChestResponse struct {
 
 type UserChestResponse struct {
 	ID            uint           `json:"id"`
-	Health        uint           `json:"health"`
-	CurrentHealth int            `json:"current_health"`
+	Health        uint64         `json:"health"`
+	CurrentHealth int64          `json:"current_health"`
 	Level         int            `json:"level"`
 	Amount        uint32         `json:"amount"`
 	Chest         *ChestResponse `json:"chest"`

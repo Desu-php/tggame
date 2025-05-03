@@ -57,8 +57,8 @@ func (s *UserChestService) Create(ctx context.Context, user *models.User) (*mode
 	userChest, err := s.userChestRepo.Create(ctx, &models.UserChest{
 		UserID:        user.ID,
 		ChestID:       chest.ID,
-		CurrentHealth: chest.Health,
-		Health:        uint(chest.Health),
+		CurrentHealth: int64(chest.Health),
+		Health:        chest.Health,
 		Level:         1,
 		Amount:        chest.Amount,
 	})
@@ -124,7 +124,7 @@ func (s *UserChestService) Upgrade(ctx context.Context, uc *models.UserChest) er
 	}
 
 	if nextChest.ID != uc.ChestID {
-		uc.Health = uint(nextChest.Health)
+		uc.Health = nextChest.Health
 		uc.ChestID = nextChest.ID
 		uc.Chest = *nextChest
 		uc.Amount = nextChest.Amount
@@ -133,7 +133,7 @@ func (s *UserChestService) Upgrade(ctx context.Context, uc *models.UserChest) er
 		s.IncreaseAmount(uc)
 	}
 
-	uc.CurrentHealth = int(uc.Health)
+	uc.CurrentHealth = int64(uc.Health)
 
 	err = s.userChestRepo.Update(ctx, uc)
 
@@ -145,7 +145,7 @@ func (s *UserChestService) Upgrade(ctx context.Context, uc *models.UserChest) er
 }
 
 func (s *UserChestService) IncreaseHealth(uc *models.UserChest) {
-	uc.Health = uint(utils.GrowthIncrease(float64(uc.Health), uc.Chest.GrowthFactor))
+	uc.Health = uint64(utils.GrowthIncrease(float64(uc.Health), uc.Chest.GrowthFactor))
 }
 
 func (s *UserChestService) IncreaseAmount(uc *models.UserChest) {

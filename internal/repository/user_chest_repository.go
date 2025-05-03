@@ -34,7 +34,7 @@ func (r *userChestRepository) Create(ctx context.Context, userChest *models.User
 }
 
 func (r *userChestRepository) DecrementHealth(ctx context.Context, userChest *models.UserChest, damage uint) error {
-	userChest.CurrentHealth = userChest.CurrentHealth - int(damage)
+	userChest.CurrentHealth = userChest.CurrentHealth - int64(damage)
 
 	result := r.db.WithContext(ctx).Save(userChest)
 
