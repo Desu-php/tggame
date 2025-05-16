@@ -20,6 +20,7 @@ type UserStatUpgradeDto struct {
 	GoldMultiplier float64
 	PassiveDamage  uint
 	User           *models.User
+	Model          Model
 }
 
 func NewUserStatService(
@@ -78,4 +79,8 @@ func (s *UserStatService) Downgrade(ctx context.Context, dto UserStatUpgradeDto)
 	}
 
 	return nil
+}
+
+func (s *UserStatService) log(ctx context.Context, dto UserStatUpgradeDto) error {
+
 }
