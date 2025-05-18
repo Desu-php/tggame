@@ -194,6 +194,7 @@ func (as *BoosterController) Buy(c *gin.Context) {
 			GoldMultiplier: newUserAspect.GoldMultiplier,
 			User:           user,
 			PassiveDamage:  newUserAspect.PassiveDamage,
+			Attributable:   aspect,
 		})
 
 		if err != nil {
@@ -318,6 +319,7 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 			CriticalChance: aspectStat.CriticalChance,
 			GoldMultiplier: aspectStat.GoldMultiplier,
 			User:           user,
+			Attributable:   &aspect,
 		})
 
 		if err != nil {

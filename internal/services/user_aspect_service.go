@@ -71,6 +71,7 @@ func (s *UserAspectService) SetAspect(c context.Context, user *models.User, aspe
 				GoldMultiplier: userAspect.GoldMultiplier,
 				PassiveDamage:  userAspect.PassiveDamage,
 				User:           user,
+				Attributable:   aspect,
 			})
 
 			if err != nil {
@@ -139,6 +140,7 @@ func (s *UserAspectService) create(c context.Context, user *models.User, aspect 
 		GoldMultiplier: userAspect.GoldMultiplier,
 		PassiveDamage:  userAspect.PassiveDamage,
 		User:           user,
+		Attributable:   aspect,
 	})
 
 	if err != nil {

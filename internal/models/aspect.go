@@ -45,3 +45,11 @@ func (a *Aspect) IsAspect() bool {
 func (a *Aspect) IsBooster() bool {
 	return a.Type == Booster
 }
+
+func (a *Aspect) AttributableName() string {
+	return "aspects"
+}
+
+func (a *Aspect) AttributableID() uint {
+	return a.ID
+}

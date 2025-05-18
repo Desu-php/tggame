@@ -93,7 +93,7 @@ func (uc *UserController) Info(c *gin.Context) {
 	var items []GroupedItem
 
 	err = uc.db.WithContext(c).Model(models.UserItem{}).
-		Select("r.id, r.name, count(DISTINCT item_id) as items_count").
+		Select("r.id, r.name, count(DISTINCT item_id) as items_count, r.sort").
 		Joins("inner join items as i on i.id = user_items.item_id").
 		Joins("inner join rarities as r on r.id = i.rarity_id").
 		Group("r.id").

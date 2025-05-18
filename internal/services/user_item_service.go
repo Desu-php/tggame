@@ -45,6 +45,7 @@ func (s *UserItemService) SetUserItem(ctx context.Context, user *models.User, it
 				GoldMultiplier: item.GoldMultiplier,
 				PassiveDamage:  item.PassiveDamage,
 				User:           user,
+				Attributable:   item,
 			})
 
 			if err != nil {

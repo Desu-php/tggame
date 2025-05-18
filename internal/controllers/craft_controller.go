@@ -208,6 +208,7 @@ func (cc *CraftController) Craft(c *gin.Context) {
 					GoldMultiplier: downgradeItem.GoldMultiplier,
 					PassiveDamage:  downgradeItem.PassiveDamage,
 					User:           user,
+					Attributable:   &downgradeItem,
 				})
 
 				if err != nil {
