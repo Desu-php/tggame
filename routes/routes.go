@@ -29,6 +29,7 @@ func RegisterRoutes(
 	aspectController *controllers.AspectController,
 	craftController *controllers.CraftController,
 	itemController *controllers.ItemController,
+	taskController *controllers.TaskController,
 ) {
 
 	game := r.Group("/api/game")
@@ -66,5 +67,7 @@ func RegisterRoutes(
 		api.POST("aspect/:id/active", aspectController.Store)
 
 		api.POST("craft", craftController.Craft)
+
+		api.GET("tasks", taskController.GetAll)
 	}
 }

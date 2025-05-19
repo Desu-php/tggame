@@ -16,4 +16,5 @@ var Module = fx.Provide(
 	NewAspectController,
 	NewCraftController,
 	NewItemController,
+	NewTaskController,
 )

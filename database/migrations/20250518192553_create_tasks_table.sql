@@ -8,6 +8,8 @@ CREATE TABLE tasks
     type         VARCHAR(50)  NOT NULL,
     target_value INTEGER      NOT NULL,
     amount       BIGINT       NOT NULL,
+    created_at timestamp not null,
+    updated_at timestamp not null
 );
 -- +goose StatementEnd
 
