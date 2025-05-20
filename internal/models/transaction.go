@@ -25,6 +25,7 @@ type TransactionType int16
 // Возможные значения для TransactionType
 const (
 	TransactionTypeIncome        TransactionType = 1
+	TransactionTypeTaskCompleted TransactionType = 2
 	TransactionTypeBuyAspect     TransactionType = 100
 	TransactionTypeUpgradeAspect TransactionType = 101
 )
@@ -36,6 +37,10 @@ func (t *TransactionType) String() string {
 		return "income"
 	case TransactionTypeBuyAspect:
 		return "buy_aspect"
+	case TransactionTypeTaskCompleted:
+		return "task_completed"
+	case TransactionTypeUpgradeAspect:
+		return "upgrade_aspect"
 	default:
 		return "unknown"
 	}
