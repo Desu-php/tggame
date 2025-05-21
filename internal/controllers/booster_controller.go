@@ -298,7 +298,7 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 		userAspect.GoldMultiplier += aspectStat.GoldMultiplier
 		userAspect.Amount = uint(amount)
 
-		if err := as.db.WithContext(ctx).Model(models.UserAspect{}).Where("id = ?", userAspect.ID).Updates(userAspect).Error; err != nil {
+		if err = as.db.WithContext(ctx).Model(models.UserAspect{}).Where("id = ?", userAspect.ID).Updates(userAspect).Error; err != nil {
 			return fmt.Errorf("failed to update user aspect: %w", err)
 		}
 
@@ -306,7 +306,7 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 			Amount: amount,
 			User:   user,
 			Model:  &aspectStat,
-			Type:   models.TransactionTypeBuyAspect,
+			Type:   models.TransactionTypeUpgradeAspect,
 		})
 
 		if err != nil {

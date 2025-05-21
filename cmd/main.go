@@ -62,7 +62,7 @@ func main() {
 func NewGinEngine(cfg *config.Config) *gin.Engine {
 	engine := gin.Default()
 
-	config := cors.Config{
+	c := cors.Config{
 		AllowOrigins:     strings.Split(cfg.AppFrontUrl, ","),
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"*"},  // Разрешённые заголовки
@@ -71,7 +71,7 @@ func NewGinEngine(cfg *config.Config) *gin.Engine {
 		MaxAge:           12 * time.Hour, // Время кеширования CORS-политики
 	}
 
-	engine.Use(cors.New(config))
+	engine.Use(cors.New(c))
 
 	return engine
 }

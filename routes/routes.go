@@ -69,5 +69,7 @@ func RegisterRoutes(
 		api.POST("craft", craftController.Craft)
 
 		api.GET("tasks", taskController.GetAll)
+		api.POST("task/click/link", taskController.ClickLink)
+		api.GET("task/:id/reward", taskController.ReceiveReward)
 	}
 }

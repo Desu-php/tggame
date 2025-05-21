@@ -1,11 +1,13 @@
 package services
 
 import (
+	"errors"
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/repository"
 	"example.com/v2/pkg/transaction"
 	"fmt"
 	"golang.org/x/net/context"
+	"gorm.io/gorm"
 	"time"
 )
 
@@ -47,6 +49,10 @@ func (t *TaskService) ReceiveReward(ctx context.Context, userTaskID uint, user *
 	userTask, err := t.repository.FindUserTask(ctx, user, userTaskID)
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
 		return nil, fmt.Errorf("TaskService::ReceiveReward %w", err)
 	}
 

@@ -12,6 +12,7 @@ import (
 
 type UserTask struct {
 	ID          uint64          `json:"id"`
+	UserTaskID  uint64          `json:"user_task_id"`
 	Name        string          `json:"name"`
 	Description string          `json:"description"`
 	TargetValue int             `json:"target_value"`
@@ -44,6 +45,7 @@ func (repo *taskRepository) GetAll(ctx context.Context, user *models.User) ([]Us
 			tasks.name,
 			tasks.description,
 			tasks.target_value,
+			ut.id as user_task_id,
 			COALESCE(ut.progress, 0) AS progress,
 			ut.completed_at,
 			tasks.type
@@ -67,7 +69,10 @@ func (repo *taskRepository) Progress(ctx context.Context, user *models.User, tas
 	var tasks []models.Task
 
 	if err := repo.db.WithContext(ctx).
+		Select("tasks.*").
 		Where("type = ?", taskType).
+		Joins("LEFT JOIN user_tasks ut ON ut.task_id = tasks.id AND ut.user_id = ? and ut.date = CURRENT_DATE", user.ID).
+		Where("target_value > COALESCE(ut.progress, 0)").
 		Find(&tasks).Error; err != nil {
 		return fmt.Errorf("taskRepository::Progress %w", err)
 	}
