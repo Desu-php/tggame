@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -30,12 +31,13 @@ func (t *TaskType) Scan(value interface{}) error {
 }
 
 type Task struct {
-	ID          uint      `gorm:"primaryKey;autoIncrement"`
-	Name        string    `gorm:"type:varchar(255);not null"`
-	Description string    `gorm:"type:text"`
-	Type        TaskType  `gorm:"type:varchar(50);not null"`
-	TargetValue uint      `gorm:"not null"`
-	Amount      int64     `gorm:"not null"`
-	CreatedAt   time.Time `json:"created_at" gorm:"autoCreateTime"`
-	UpdatedAt   time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+	ID          uint            `gorm:"primaryKey;autoIncrement"`
+	Name        string          `gorm:"type:varchar(255);not null"`
+	Description string          `gorm:"type:text"`
+	Type        TaskType        `gorm:"type:varchar(50);not null"`
+	TargetValue uint            `gorm:"not null"`
+	Amount      int64           `gorm:"not null"`
+	CreatedAt   time.Time       `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt   time.Time       `json:"updated_at" gorm:"autoUpdateTime"`
+	Data        json.RawMessage `json:"data"`
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"encoding/json"
 	"example.com/v2/internal/models"
 	"example.com/v2/pkg/db"
 	"fmt"
@@ -19,6 +20,8 @@ type UserTask struct {
 	Progress    int             `json:"progress"`
 	CompletedAt *time.Time      `json:"completed_at"`
 	Type        models.TaskType `json:"type"`
+	Amount      float32         `json:"amount"`
+	Data        json.RawMessage `json:"data"`
 }
 
 type TaskRepository interface {
@@ -48,7 +51,9 @@ func (repo *taskRepository) GetAll(ctx context.Context, user *models.User) ([]Us
 			ut.id as user_task_id,
 			COALESCE(ut.progress, 0) AS progress,
 			ut.completed_at,
-			tasks.type
+			tasks.type,
+			tasks.amount,
+			tasks.data
 		`).
 		Joins(`
 			LEFT JOIN user_tasks ut 
@@ -69,6 +74,7 @@ func (repo *taskRepository) Progress(ctx context.Context, user *models.User, tas
 	var tasks []models.Task
 
 	if err := repo.db.WithContext(ctx).
+		Model(&models.Task{}).
 		Select("tasks.*").
 		Where("type = ?", taskType).
 		Joins("LEFT JOIN user_tasks ut ON ut.task_id = tasks.id AND ut.user_id = ? and ut.date = CURRENT_DATE", user.ID).
@@ -93,14 +99,15 @@ func (repo *taskRepository) Progress(ctx context.Context, user *models.User, tas
 		})
 	}
 
-	err := repo.db.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns: []clause.Column{
-			{Name: "task_id"}, {Name: "user_id"}, {Name: "date"},
-		},
-		DoUpdates: clause.Assignments(map[string]interface{}{
-			"progress": gorm.Expr("user_tasks.progress + EXCLUDED.progress"),
-		}),
-	}).Create(&userTasks).Error
+	err := repo.db.WithContext(ctx).Model(models.UserTask{}).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{
+				{Name: "task_id"}, {Name: "user_id"}, {Name: "date"},
+			},
+			DoUpdates: clause.Assignments(map[string]interface{}{
+				"progress": gorm.Expr("user_tasks.progress + EXCLUDED.progress"),
+			}),
+		}).Create(&userTasks).Error
 
 	if err != nil {
 		return fmt.Errorf("taskRepository::Progress %w", err)
