@@ -26,13 +26,20 @@ type UserTask struct {
 
 type TaskRepository interface {
 	GetAll(ctx context.Context, user *models.User) ([]UserTask, error)
-	Progress(ctx context.Context, user *models.User, taskType models.TaskType, progress uint) error
+	Progress(ctx context.Context, dto *TaskProgressDto) error
 	FindUserTask(ctx context.Context, user *models.User, userTaskID uint) (*models.UserTask, error)
 	Complete(ctx context.Context, userTaskID uint) error
 }
 
 type taskRepository struct {
 	db *db.DB
+}
+
+type TaskProgressDto struct {
+	Progress uint
+	Type     models.TaskType
+	User     *models.User
+	TaskID   *uint
 }
 
 func NewTaskRepository(db *db.DB) TaskRepository {
@@ -70,15 +77,21 @@ func (repo *taskRepository) GetAll(ctx context.Context, user *models.User) ([]Us
 	return tasks, nil
 }
 
-func (repo *taskRepository) Progress(ctx context.Context, user *models.User, taskType models.TaskType, progress uint) error {
+func (repo *taskRepository) Progress(ctx context.Context, dto *TaskProgressDto) error {
 	var tasks []models.Task
 
-	if err := repo.db.WithContext(ctx).
+	query := repo.db.WithContext(ctx).
 		Model(&models.Task{}).
 		Select("tasks.*").
-		Where("type = ?", taskType).
-		Joins("LEFT JOIN user_tasks ut ON ut.task_id = tasks.id AND ut.user_id = ? and ut.date = CURRENT_DATE", user.ID).
-		Where("target_value > COALESCE(ut.progress, 0)").
+		Where("type = ?", dto.Type).
+		Joins("LEFT JOIN user_tasks ut ON ut.task_id = tasks.id AND ut.user_id = ? and ut.date = CURRENT_DATE", dto.User.ID).
+		Where("target_value > COALESCE(ut.progress, 0)")
+
+	if dto.TaskID != nil {
+		query = query.Where("tasks.id = ?", dto.TaskID)
+	}
+
+	if err := query.
 		Find(&tasks).Error; err != nil {
 		return fmt.Errorf("taskRepository::Progress %w", err)
 	}
@@ -92,10 +105,10 @@ func (repo *taskRepository) Progress(ctx context.Context, user *models.User, tas
 
 	for _, task := range tasks {
 		userTasks = append(userTasks, models.UserTask{
-			UserID:   user.ID,
+			UserID:   dto.User.ID,
 			TaskID:   task.ID,
 			Date:     today,
-			Progress: progress,
+			Progress: dto.Progress,
 		})
 	}
 

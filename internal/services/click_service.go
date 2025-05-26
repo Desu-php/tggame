@@ -54,14 +54,14 @@ func (s *ClickService) Damage(ctx context.Context, user *models.User, count uint
 				return err
 			}
 
-			err = s.taskService.Progress(ctx, &TaskProgressDto{
+			err = s.taskService.Progress(ctx, &repository.TaskProgressDto{
 				Progress: 1,
 				Type:     models.TaskTypeDestroy,
 				User:     user,
 			})
 		}
 
-		err = s.taskService.Progress(ctx, &TaskProgressDto{
+		err = s.taskService.Progress(ctx, &repository.TaskProgressDto{
 			Progress: count,
 			Type:     models.TaskTypeDamage,
 			User:     user,

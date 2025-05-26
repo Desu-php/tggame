@@ -55,10 +55,25 @@ func (c *TaskController) ClickLink(ctx *gin.Context) {
 		return
 	}
 
-	err := c.taskService.Progress(ctx, &services.TaskProgressDto{
+	idParam := ctx.Param("id")
+	if idParam == "" {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Page not found"})
+		return
+	}
+
+	idUint64, err := strconv.ParseUint(idParam, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	taskID := uint(idUint64)
+
+	err = c.taskService.Progress(ctx, &repository.TaskProgressDto{
 		Progress: 1,
 		Type:     models.TaskTypeClickLink,
 		User:     user,
+		TaskID:   &taskID,
 	})
 
 	if err != nil {

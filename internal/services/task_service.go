@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-type TaskProgressDto struct {
-	Progress uint
-	Type     models.TaskType
-	User     *models.User
-}
-
 type TaskService struct {
 	repository     repository.TaskRepository
 	balanceService *BalanceService
@@ -35,8 +29,8 @@ func NewTaskService(
 	}
 }
 
-func (t *TaskService) Progress(ctx context.Context, dto *TaskProgressDto) error {
-	err := t.repository.Progress(ctx, dto.User, dto.Type, dto.Progress)
+func (t *TaskService) Progress(ctx context.Context, dto *repository.TaskProgressDto) error {
+	err := t.repository.Progress(ctx, dto)
 
 	if err != nil {
 		return fmt.Errorf("TaskService::Progress %w", err)
