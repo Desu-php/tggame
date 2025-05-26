@@ -74,7 +74,7 @@ func (ac *AspectController) Store(c *gin.Context) {
 	if err != nil {
 		var apiErr *errs.APIError
 		if errors.As(err, &apiErr) {
-			c.JSON(apiErr.Code, gin.H{"error": apiErr.Error()})
+			c.JSON(http.StatusForbidden, gin.H{"error": apiErr.Error(), "code": apiErr.Code, "details": apiErr.Params})
 			return
 		}
 		ac.logger.WithError(err).Error("AspectController::Store")

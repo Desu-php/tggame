@@ -50,16 +50,17 @@ func (s *UserAspectService) SetAspect(c context.Context, user *models.User, aspe
 	} else {
 		if userAspect.ID == aspect.ID {
 			return errs.NewAPIError(
-				403,
-				fmt.Sprintf("Аспект уже активный"),
+				errs.AspectAlreadyActiveCode,
+				nil,
 			)
 		} else if time.Since(userAspect.CreatedAt) < 7*24*time.Hour {
 			nextAvailable := userAspect.CreatedAt.Add(7 * 24 * time.Hour)
 
 			return errs.NewAPIError(
-				403,
-				fmt.Sprintf("Нельзя подключить новый аспект, next_available_date: %s",
-					nextAvailable.Format("2006-01-02")),
+				errs.AspectActivationTooEarlyCode,
+				&map[string]interface{}{
+					"next_available_date": nextAvailable.Format("2006-01-02 15:04:05"),
+				},
 			)
 		}
 

@@ -26,7 +26,7 @@ func (cc *RarityController) GetRarities(c *gin.Context) {
 
 	if err != nil {
 		cc.logger.WithContext(c).Errorf("failed to get rarities: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get rarities"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
 		return
 	}
 

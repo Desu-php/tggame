@@ -5,6 +5,7 @@ import (
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/responses"
 	"example.com/v2/internal/services"
+	"example.com/v2/pkg/errs"
 	"example.com/v2/pkg/image"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -42,7 +43,7 @@ func (cc *ClickController) Store(c *gin.Context) {
 
 	userData, exists := c.Get("user")
 	if !exists {
-		c.JSON(401, gin.H{"error": "User not found"})
+		c.JSON(401, gin.H{"error": "User not found", "code": errs.UnauthorizedCode})
 		return
 	}
 

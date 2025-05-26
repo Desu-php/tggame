@@ -2,7 +2,6 @@ package errs
 
 import (
 	"errors"
-	"fmt"
 )
 
 var (
@@ -10,17 +9,17 @@ var (
 )
 
 type APIError struct {
-	Code    int
-	Message string
+	Code   string
+	Params *map[string]interface{}
 }
 
 func (e *APIError) Error() string {
-	return fmt.Sprintf(e.Message)
+	return e.Code
 }
 
-func NewAPIError(code int, message string) *APIError {
+func NewAPIError(code string, params *map[string]interface{}) *APIError {
 	return &APIError{
-		Code:    code,
-		Message: message,
+		Code:   code,
+		Params: params,
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"example.com/v2/internal/responses"
 	"example.com/v2/internal/services"
 	"example.com/v2/pkg/db"
+	"example.com/v2/pkg/errs"
 	"example.com/v2/pkg/transaction"
 	"example.com/v2/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -93,7 +94,7 @@ func (cc *CraftController) Craft(c *gin.Context) {
 
 	for _, item := range items {
 		if rarityId != item.RarityID {
-			c.JSON(400, gin.H{"error": "You can only craft items of the same rarity"})
+			c.JSON(400, gin.H{"error": "You can only craft items of the same rarity", "code": errs.CraftingItemsDifferentRarityCode})
 			return
 		}
 	}
@@ -135,7 +136,7 @@ func (cc *CraftController) Craft(c *gin.Context) {
 		}
 
 		if !hasEnough {
-			c.JSON(400, gin.H{"error": "Not enough items for crafting"})
+			c.JSON(400, gin.H{"error": "Not enough items for crafting", "code": errs.CraftingNotEnoughItemsCode})
 			return
 		}
 	}

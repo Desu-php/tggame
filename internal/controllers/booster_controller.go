@@ -128,7 +128,7 @@ func (as *BoosterController) Buy(c *gin.Context) {
 	if err == nil {
 		c.JSON(http.StatusConflict, gin.H{
 			"error": "User already owns this booster",
-			"code":  "booster_already_owned",
+			"code":  errs.BoosterAlreadyOwned,
 		})
 		return
 	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -172,7 +172,7 @@ func (as *BoosterController) Buy(c *gin.Context) {
 			UpdatedAt:      time.Now(),
 		}
 
-		if err := as.db.WithContext(ctx).Create(&newUserAspect).Error; err != nil {
+		if err = as.db.WithContext(ctx).Create(&newUserAspect).Error; err != nil {
 			return fmt.Errorf("failed to create user aspect: %w", err)
 		}
 
@@ -206,7 +206,7 @@ func (as *BoosterController) Buy(c *gin.Context) {
 
 	if err != nil {
 		if errors.Is(err, errs.ErrInsufficientBalance) {
-			c.JSON(400, gin.H{"error": "Недостаточно средств на балансе"})
+			c.JSON(400, gin.H{"error": "Недостаточно средств на балансе", "code": errs.InsufficientBalanceCode})
 			return
 		}
 
@@ -273,7 +273,7 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(400, gin.H{"error": "Бустер достиг максимального уровня"})
+			c.JSON(400, gin.H{"error": "Бустер достиг максимального уровня", "code": errs.BoosterMaxLevelReachedCode})
 			return
 		} else {
 			as.logger.WithError(err).Error("BoosterController::Upgrade")
@@ -331,7 +331,7 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 
 	if err != nil {
 		if errors.Is(err, errs.ErrInsufficientBalance) {
-			c.JSON(400, gin.H{"error": "Недостаточно средств на балансе"})
+			c.JSON(400, gin.H{"error": "Недостаточно средств на балансе", "code": errs.InsufficientBalanceCode})
 			return
 		}
 

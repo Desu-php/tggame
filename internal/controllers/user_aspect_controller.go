@@ -39,6 +39,8 @@ func (a *UserAspectController) GetBoosters(c *gin.Context) {
 
 	if err != nil {
 		a.logger.WithError(err).Error("UserAspectController::GetBoosters failed")
+		responses.ServerErrorResponse(c)
+		return
 	}
 
 	responses.OkResponse(c, gin.H{
