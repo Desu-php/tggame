@@ -17,6 +17,12 @@ type TaskService struct {
 	trx            transaction.TransactionManager
 }
 
+type ProgressOneTimeDto struct {
+	User     *models.User
+	TaskID   uint
+	TaskType models.TaskType
+}
+
 func NewTaskService(
 	taskRepository repository.TaskRepository,
 	balanceService *BalanceService,
@@ -81,4 +87,43 @@ func (t *TaskService) ReceiveReward(ctx context.Context, userTaskID uint, user *
 	}
 
 	return userTask, nil
+}
+
+func (t *TaskService) ProgressOnTimeTask(ctx context.Context, dto *ProgressOneTimeDto) (bool, error) {
+	var ok bool
+
+	err := t.trx.RunInTransaction(ctx, func(ctx context.Context) error {
+		userTask, err := t.repository.FindTaskById(ctx, dto.User, dto.TaskID)
+
+		if err != nil {
+			ok = false
+			return err
+		}
+
+		if userTask.CompletedAt != nil {
+			ok = false
+			return nil
+		}
+
+		if userTask.Progress >= userTask.Task.TargetValue {
+			ok = true
+			return nil
+		}
+
+		err = t.repository.ProgressTask(ctx, userTask, 1)
+
+		if err != nil {
+			ok = false
+			return err
+		}
+
+		ok = true
+		return nil
+	})
+
+	if err != nil {
+		return ok, fmt.Errorf("TaskService::ProgressOnTimeTask %w", err)
+	}
+
+	return ok, nil
 }

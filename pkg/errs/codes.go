@@ -9,4 +9,5 @@ const (
 	CraftingNotEnoughItemsCode       = "crafting_not_enough_items"
 	AspectAlreadyActiveCode          = "aspect_already_active"
 	AspectActivationTooEarlyCode     = "aspect_activation_too_early"
+	TaskAlreadyCompletedCode         = "task_already_completed"
 )

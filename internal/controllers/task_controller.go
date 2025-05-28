@@ -5,6 +5,7 @@ import (
 	"example.com/v2/internal/repository"
 	"example.com/v2/internal/responses"
 	"example.com/v2/internal/services"
+	"example.com/v2/pkg/errs"
 	"example.com/v2/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -69,16 +70,23 @@ func (c *TaskController) ClickLink(ctx *gin.Context) {
 
 	taskID := uint(idUint64)
 
-	err = c.taskService.Progress(ctx, &repository.TaskProgressDto{
-		Progress: 1,
-		Type:     models.TaskTypeClickLink,
+	ok, err = c.taskService.ProgressOnTimeTask(ctx, &services.ProgressOneTimeDto{
 		User:     user,
-		TaskID:   &taskID,
+		TaskID:   taskID,
+		TaskType: models.TaskTypeClickLink,
 	})
 
 	if err != nil {
 		c.logger.WithError(err).Error("TaskController::ClickLink")
 		responses.ServerErrorResponse(ctx)
+		return
+	}
+
+	if ok == false {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"code":  errs.TaskAlreadyCompletedCode,
+			"error": "Task already completed",
+		})
 		return
 	}
 

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"example.com/v2/internal/models"
 	"example.com/v2/pkg/db"
 	"fmt"
@@ -29,6 +30,8 @@ type TaskRepository interface {
 	Progress(ctx context.Context, dto *TaskProgressDto) error
 	FindUserTask(ctx context.Context, user *models.User, userTaskID uint) (*models.UserTask, error)
 	Complete(ctx context.Context, userTaskID uint) error
+	FindTaskById(ctx context.Context, user *models.User, taskID uint) (*models.UserTask, error)
+	ProgressTask(ctx context.Context, userTask *models.UserTask, progress uint) error
 }
 
 type taskRepository struct {
@@ -66,8 +69,8 @@ func (repo *taskRepository) GetAll(ctx context.Context, user *models.User) ([]Us
 			LEFT JOIN user_tasks ut 
 				ON ut.task_id = tasks.id 
 				AND ut.user_id = ? 
-				AND ut.date = CURRENT_DATE
-		`, user.ID).
+				AND (ut.date = CURRENT_DATE OR tasks.type = ?)
+		`, user.ID, models.TaskTypeClickLink).
 		Scan(&tasks).Error
 
 	if err != nil {
@@ -151,6 +154,54 @@ func (repo *taskRepository) Complete(ctx context.Context, userTaskID uint) error
 
 	if err != nil {
 		return fmt.Errorf("taskRepository::Complete %w", err)
+	}
+
+	return nil
+}
+
+func (repo *taskRepository) FindTaskById(ctx context.Context, user *models.User, taskID uint) (*models.UserTask, error) {
+	var userTask models.UserTask
+
+	err := repo.db.WithContext(ctx).Model(&models.UserTask{}).
+		Where("user_id = ?", user.ID).
+		Where("task_id = ?", taskID).
+		First(&userTask).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = repo.db.WithContext(ctx).Model(&models.UserTask{}).Create(&models.UserTask{
+				UserID:   user.ID,
+				TaskID:   taskID,
+				Date:     time.Now().Truncate(24 * time.Hour),
+				Progress: 0,
+			}).Error
+
+			if err != nil {
+				return nil, fmt.Errorf("taskRepository::FindTaskById: %w", err)
+			}
+		}
+		return nil, fmt.Errorf("taskRepository::FindTaskById: %w", err)
+	}
+
+	var task models.Task
+
+	if err = repo.db.WithContext(ctx).
+		First(&task, userTask.TaskID).Error; err != nil {
+		return nil, fmt.Errorf("taskRepository::FindTaskById preload: %w", err)
+	}
+
+	userTask.Task = &task
+
+	return &userTask, nil
+}
+
+func (repo *taskRepository) ProgressTask(ctx context.Context, userTask *models.UserTask, progress uint) error {
+	err := repo.db.WithContext(ctx).Model(&models.UserTask{}).
+		Where("id = ?", userTask.ID).
+		Update("progress", gorm.Expr("progress + ?", progress)).Error
+
+	if err != nil {
+		return fmt.Errorf("taskRepository::ProgressTask: %w", err)
 	}
 
 	return nil
