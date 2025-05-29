@@ -169,24 +169,25 @@ func (repo *taskRepository) FindTaskById(ctx context.Context, user *models.User,
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			err = repo.db.WithContext(ctx).Model(&models.UserTask{}).Create(&models.UserTask{
-				UserID:   user.ID,
-				TaskID:   taskID,
-				Date:     time.Now().Truncate(24 * time.Hour),
-				Progress: 0,
-			}).Error
+			userTask.UserID = user.ID
+			userTask.TaskID = taskID
+			userTask.Date = time.Now().Truncate(24 * time.Hour)
+			userTask.Progress = 0
+			err = repo.db.WithContext(ctx).Model(&models.UserTask{}).Create(&userTask).Error
 
 			if err != nil {
 				return nil, fmt.Errorf("taskRepository::FindTaskById: %w", err)
 			}
+
+		} else {
+			return nil, fmt.Errorf("taskRepository::FindTaskById: %w", err)
 		}
-		return nil, fmt.Errorf("taskRepository::FindTaskById: %w", err)
 	}
 
 	var task models.Task
 
 	if err = repo.db.WithContext(ctx).
-		First(&task, userTask.TaskID).Error; err != nil {
+		First(&task, taskID).Error; err != nil {
 		return nil, fmt.Errorf("taskRepository::FindTaskById preload: %w", err)
 	}
 
