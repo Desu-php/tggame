@@ -45,7 +45,12 @@ SELECT
     WHEN ast.amount IS NULL THEN ua.amount
     ELSE GREATEST(ua.amount, ast.amount)
   END AS amount,
-  ast.amount_growth_factor
+  ast.amount_growth_factor,
+   uth.total_critical_damage,
+       uth.total_critical_chance,
+       uth.total_damage,
+       uth.total_gold_multiplier,
+       uth.total_passive_damage
 FROM aspects a
 LEFT JOIN user_aspects ua ON ua.aspect_id = a.id AND ua.user_id = ?
 LEFT JOIN LATERAL (
@@ -64,8 +69,18 @@ LEFT JOIN LATERAL (
     start_level
   LIMIT 1
 ) ast ON true
+LEFT JOIN (SELECT SUM(critical_damage) as total_critical_damage,
+                           SUM(critical_chance) as total_critical_chance,
+                           SUM(damage)          as total_damage,
+                           SUM(gold_multiplier) as total_gold_multiplier,
+                           SUM(passive_damage)  as total_passive_damage,
+                           uth.attributable_id
+                    from user_stat_histories as uth
+                    where uth.user_id = ? and uth.is_upgrade = true and uth.attributable_type = 'aspects'
+                    group by uth.attributable_id
+                    ) as uth on uth.attributable_id = a.id
 WHERE a.type = ?
-`, user.ID, aspectType).Scan(&aspects).Error
+`, user.ID, user.ID, aspectType).Scan(&aspects).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("AspectRepository::GetUserAspectByType %w", err)

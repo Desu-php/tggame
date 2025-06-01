@@ -87,13 +87,18 @@ type AspectResponse struct {
 
 type AspectWithStatsResponse struct {
 	AspectResponse
-	UserLevel          uint    `json:"user_level,omitempty"`
-	AspectStatId       uint    `json:"aspect_stat_id,omitempty"`
-	Damage             uint    `json:"damage,omitempty"`
-	CriticalDamage     uint    `json:"critical_damage,omitempty"`
-	CriticalChance     float64 `json:"critical_change,omitempty"`
-	GoldMultiplier     float64 `json:"gold_multiplier,omitempty"`
-	Amount             uint    `json:"amount,omitempty"`
-	AmountGrowthFactor float64 `json:"-"`
-	PassiveDamage      uint    `json:"passive_damage,omitempty"`
+	UserLevel           uint    `json:"user_level,omitempty"`
+	AspectStatId        uint    `json:"aspect_stat_id,omitempty"`
+	Damage              uint    `json:"damage,omitempty"`
+	CriticalDamage      uint    `json:"critical_damage,omitempty"`
+	CriticalChance      float64 `json:"critical_change,omitempty"`
+	GoldMultiplier      float64 `json:"gold_multiplier,omitempty"`
+	Amount              uint    `json:"amount,omitempty"`
+	AmountGrowthFactor  float64 `json:"-"`
+	PassiveDamage       uint    `json:"passive_damage,omitempty"`
+	TotalCriticalDamage float64 `json:"total_critical_damage,omitempty"`
+	TotalCriticalChance float64 `json:"total_critical_chance,omitempty"`
+	TotalDamage         uint    `json:"total_damage,omitempty"`
+	TotalGoldMultiplier float64 `json:"total_gold_multiplier,omitempty"`
+	TotalPassiveDamage  uint    `json:"total_passive_damage,omitempty"`
 }
