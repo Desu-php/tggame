@@ -91,7 +91,7 @@ type AspectWithStatsResponse struct {
 	AspectStatId        uint    `json:"aspect_stat_id,omitempty"`
 	Damage              uint    `json:"damage,omitempty"`
 	CriticalDamage      uint    `json:"critical_damage,omitempty"`
-	CriticalChance      float64 `json:"critical_change,omitempty"`
+	CriticalChance      float64 `json:"critical_chance,omitempty"`
 	GoldMultiplier      float64 `json:"gold_multiplier,omitempty"`
 	Amount              uint    `json:"amount,omitempty"`
 	AmountGrowthFactor  float64 `json:"-"`
