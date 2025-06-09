@@ -194,45 +194,17 @@ func (cc *CraftController) Craft(c *gin.Context) {
 			}
 
 			if itemsMap[item.ItemID] == 0 {
-				downgradeItem := models.Item{
-					ID:             item.ItemID,
-					Name:           "",
-					Image:          "",
-					TypeID:         0,
-					RarityID:       itemRarity.ID,
-					Description:    "",
-					DropChance:     0,
-					CreatedAt:      time.Time{},
-					UpdatedAt:      time.Time{},
-					Type:           models.ItemType{},
-					Rarity:         models.Rarity{},
-					Damage:         0,
-					CriticalDamage: 0,
-					CriticalChance: 0,
-					GoldMultiplier: 0,
-					PassiveDamage:  0,
-				}
+				var downgradeItem models.Item
 
-				var userStatHistory models.UserStatHistory
-
-				err = cc.db.WithContext(ctx).Model(&models.UserStatHistory{}).
-					Where("user_id = ? and attributable_type = ? and attributable_id = ?", user.ID, downgradeItem.AttributableName(), downgradeItem.AttributableID()).
-					Where("is_upgrade = true").
-					Order("id desc").
-					First(&userStatHistory).Error
+				err = cc.db.WithContext(ctx).Model(&models.Item{}).First(&downgradeItem, item.ItemID).Error
 
 				if err != nil {
 					return err
 				}
 
-				err = cc.userStatService.Downgrade(ctx, services.UserStatUpgradeDto{
-					Damage:         uint(userStatHistory.Damage),
-					CriticalDamage: uint(userStatHistory.CriticalDamage),
-					CriticalChance: userStatHistory.CriticalChance,
-					GoldMultiplier: userStatHistory.GoldMultiplier,
-					PassiveDamage:  uint(userStatHistory.PassiveDamage),
-					User:           user,
-					Attributable:   &downgradeItem,
+				err = cc.userStatService.Downgrade(ctx, &services.UserStatDowngradeDto{
+					User:         user,
+					Attributable: &downgradeItem,
 				})
 
 				if err != nil {

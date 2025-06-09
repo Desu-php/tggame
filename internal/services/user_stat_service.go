@@ -26,6 +26,11 @@ type UserStatUpgradeDto struct {
 	Attributable   Attributable
 }
 
+type UserStatDowngradeDto struct {
+	User         *models.User
+	Attributable Attributable
+}
+
 type Attributable interface {
 	AttributableID() uint
 	AttributableName() string
@@ -43,7 +48,7 @@ func NewUserStatService(
 	}
 }
 
-func (s *UserStatService) Upgrade(ctx context.Context, dto UserStatUpgradeDto) error {
+func (s *UserStatService) Upgrade(ctx context.Context, dto *UserStatUpgradeDto) error {
 	userStat, err := s.userStatRepository.GetStat(ctx, dto.User)
 	if err != nil {
 		return err
@@ -78,17 +83,31 @@ func (s *UserStatService) Upgrade(ctx context.Context, dto UserStatUpgradeDto) e
 	return nil
 }
 
-func (s *UserStatService) Downgrade(ctx context.Context, dto UserStatUpgradeDto) error {
+func (s *UserStatService) Downgrade(ctx context.Context, dto *UserStatDowngradeDto) error {
 	userStat, err := s.userStatRepository.GetStat(ctx, dto.User)
 	if err != nil {
 		return err
 	}
 
-	userStat.CriticalDamage -= dto.CriticalDamage
-	userStat.Damage -= dto.Damage
-	userStat.GoldMultiplier -= dto.GoldMultiplier
-	userStat.CriticalChance -= dto.CriticalChance
-	userStat.PassiveDamage -= dto.PassiveDamage
+	var userStatHistory models.UserStatHistory
+
+	err = s.db.WithContext(ctx).Model(&models.UserStatHistory{}).
+		Where("user_id = ?", dto.User.ID).
+		Where("attributable_type = ?", dto.Attributable.AttributableName()).
+		Where("attributable_id = ?", dto.Attributable.AttributableID()).
+		Where("is_upgrade = true").
+		Order("id desc").
+		First(&userStatHistory).Error
+
+	if err != nil {
+		return fmt.Errorf("UserStatService::Downgrade %w", err)
+	}
+
+	userStat.CriticalDamage -= uint(userStatHistory.CriticalDamage)
+	userStat.Damage -= uint(userStatHistory.Damage)
+	userStat.GoldMultiplier -= userStatHistory.GoldMultiplier
+	userStat.CriticalChance -= userStatHistory.CriticalChance
+	userStat.PassiveDamage -= uint(userStatHistory.PassiveDamage)
 
 	err = s.trx.RunInTransaction(ctx, func(ctx context.Context) error {
 		err = s.db.WithContext(ctx).Model(userStat).Updates(map[string]interface{}{
@@ -103,7 +122,15 @@ func (s *UserStatService) Downgrade(ctx context.Context, dto UserStatUpgradeDto)
 			return fmt.Errorf("UserStat updates %w", err)
 		}
 
-		err = s.log(ctx, dto, false)
+		err = s.log(ctx, &UserStatUpgradeDto{
+			Damage:         uint(userStatHistory.Damage),
+			CriticalDamage: uint(userStatHistory.CriticalDamage),
+			CriticalChance: userStatHistory.CriticalChance,
+			GoldMultiplier: userStatHistory.GoldMultiplier,
+			PassiveDamage:  uint(userStatHistory.PassiveDamage),
+			User:           dto.User,
+			Attributable:   dto.Attributable,
+		}, false)
 
 		if err != nil {
 			return fmt.Errorf("UserStat logs %w", err)
@@ -119,7 +146,7 @@ func (s *UserStatService) Downgrade(ctx context.Context, dto UserStatUpgradeDto)
 	return nil
 }
 
-func (s *UserStatService) log(ctx context.Context, dto UserStatUpgradeDto, isUpgrade bool) error {
+func (s *UserStatService) log(ctx context.Context, dto *UserStatUpgradeDto, isUpgrade bool) error {
 	damage := int(dto.Damage)
 	criticalDamage := int(dto.CriticalDamage)
 	criticalChance := dto.CriticalChance

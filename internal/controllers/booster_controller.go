@@ -187,7 +187,7 @@ func (as *BoosterController) Buy(c *gin.Context) {
 			return err
 		}
 
-		err = as.userStatService.Upgrade(ctx, services.UserStatUpgradeDto{
+		err = as.userStatService.Upgrade(ctx, &services.UserStatUpgradeDto{
 			Damage:         newUserAspect.Damage,
 			CriticalDamage: newUserAspect.CriticalDamage,
 			CriticalChance: newUserAspect.CriticalChance,
@@ -313,7 +313,7 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 			return err
 		}
 
-		err = as.userStatService.Upgrade(ctx, services.UserStatUpgradeDto{
+		err = as.userStatService.Upgrade(ctx, &services.UserStatUpgradeDto{
 			Damage:         aspectStat.Damage,
 			CriticalDamage: aspectStat.CriticalDamage,
 			CriticalChance: aspectStat.CriticalChance,

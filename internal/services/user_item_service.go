@@ -38,7 +38,7 @@ func (s *UserItemService) SetUserItem(ctx context.Context, user *models.User, it
 
 	err = s.trx.RunInTransaction(ctx, func(ctx context.Context) error {
 		if exists == false {
-			err = s.UserStatService.Upgrade(ctx, UserStatUpgradeDto{
+			err = s.UserStatService.Upgrade(ctx, &UserStatUpgradeDto{
 				Damage:         item.Damage,
 				CriticalDamage: item.CriticalDamage,
 				CriticalChance: item.CriticalChance,

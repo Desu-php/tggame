@@ -65,14 +65,9 @@ func (s *UserAspectService) SetAspect(c context.Context, user *models.User, aspe
 		}
 
 		err = s.trx.RunInTransaction(c, func(ctx context.Context) error {
-			err = s.userStatService.Downgrade(ctx, UserStatUpgradeDto{
-				Damage:         userAspect.Damage,
-				CriticalDamage: userAspect.CriticalDamage,
-				CriticalChance: userAspect.CriticalChance,
-				GoldMultiplier: userAspect.GoldMultiplier,
-				PassiveDamage:  userAspect.PassiveDamage,
-				User:           user,
-				Attributable:   aspect,
+			err = s.userStatService.Downgrade(ctx, &UserStatDowngradeDto{
+				User:         user,
+				Attributable: aspect,
 			})
 
 			if err != nil {
@@ -134,7 +129,7 @@ func (s *UserAspectService) create(c context.Context, user *models.User, aspect 
 		return nil, fmt.Errorf("UserAspectService::create: %w", result.Error)
 	}
 
-	err = s.userStatService.Upgrade(c, UserStatUpgradeDto{
+	err = s.userStatService.Upgrade(c, &UserStatUpgradeDto{
 		Damage:         userAspect.Damage,
 		CriticalDamage: userAspect.CriticalDamage,
 		CriticalChance: userAspect.CriticalChance,
