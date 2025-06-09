@@ -176,7 +176,7 @@ func (cc *CraftController) Craft(c *gin.Context) {
 	err = cc.trx.RunInTransaction(c, func(ctx context.Context) error {
 		for _, item := range itemInputs.Items {
 			var ids []uint
-			err = cc.db.Model(&models.UserItem{}).
+			err = cc.db.WithContext(ctx).Model(&models.UserItem{}).
 				Where("user_id = ?", user.ID).
 				Where("item_id = ?", item.ItemID).
 				Limit(int(item.Count)).
@@ -187,27 +187,50 @@ func (cc *CraftController) Craft(c *gin.Context) {
 			}
 
 			if len(ids) > 0 {
-				err = cc.db.Delete(&models.UserItem{}, ids).Error
+				err = cc.db.WithContext(ctx).Delete(&models.UserItem{}, ids).Error
 				if err != nil {
 					return err
 				}
 			}
 
 			if itemsMap[item.ItemID] == 0 {
-				var downgradeItem models.Item
+				downgradeItem := models.Item{
+					ID:             item.ItemID,
+					Name:           "",
+					Image:          "",
+					TypeID:         0,
+					RarityID:       itemRarity.ID,
+					Description:    "",
+					DropChance:     0,
+					CreatedAt:      time.Time{},
+					UpdatedAt:      time.Time{},
+					Type:           models.ItemType{},
+					Rarity:         models.Rarity{},
+					Damage:         0,
+					CriticalDamage: 0,
+					CriticalChance: 0,
+					GoldMultiplier: 0,
+					PassiveDamage:  0,
+				}
 
-				err = cc.db.Model(&models.Item{}).First(&downgradeItem, item.ItemID).Error
+				var userStatHistory models.UserStatHistory
+
+				err = cc.db.WithContext(ctx).Model(&models.UserStatHistory{}).
+					Where("user_id = ? and attributable_type = ? and attributable_id = ?", user.ID, downgradeItem.AttributableName(), downgradeItem.AttributableID()).
+					Where("is_upgrade = true").
+					Order("id desc").
+					First(&userStatHistory).Error
 
 				if err != nil {
 					return err
 				}
 
 				err = cc.userStatService.Downgrade(ctx, services.UserStatUpgradeDto{
-					Damage:         downgradeItem.Damage,
-					CriticalDamage: downgradeItem.CriticalDamage,
-					CriticalChance: downgradeItem.CriticalChance,
-					GoldMultiplier: downgradeItem.GoldMultiplier,
-					PassiveDamage:  downgradeItem.PassiveDamage,
+					Damage:         uint(userStatHistory.Damage),
+					CriticalDamage: uint(userStatHistory.CriticalDamage),
+					CriticalChance: userStatHistory.CriticalChance,
+					GoldMultiplier: userStatHistory.GoldMultiplier,
+					PassiveDamage:  uint(userStatHistory.PassiveDamage),
 					User:           user,
 					Attributable:   &downgradeItem,
 				})
