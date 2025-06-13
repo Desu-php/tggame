@@ -153,7 +153,7 @@ func (s *UserStatService) log(ctx context.Context, dto *UserStatUpgradeDto, isUp
 	goldMultiplier := dto.GoldMultiplier
 	passiveDamage := int(dto.PassiveDamage)
 
-	if !isUpgrade {
+	if isUpgrade == false {
 		damage = -damage
 		criticalDamage = -criticalDamage
 		criticalChance = -criticalChance
