@@ -19,4 +19,5 @@ var Module = fx.Provide(
 	NewUserStatService,
 	NewUserAspectService,
 	NewTaskService,
+	NewReferralService,
 )

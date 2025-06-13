@@ -17,6 +17,7 @@ type UserService struct {
 	transaction            transaction.TransactionManager
 	referralUserRepository repository.ReferralUserRepository
 	balanceRepo            balance.BalanceRepository
+	referralService        *ReferralService
 }
 
 func NewUserService(
@@ -25,6 +26,7 @@ func NewUserService(
 	transaction transaction.TransactionManager,
 	referralUserRepository repository.ReferralUserRepository,
 	balanceRepo balance.BalanceRepository,
+	referralService *ReferralService,
 ) *UserService {
 	return &UserService{
 		repo:                   repo,
@@ -32,6 +34,7 @@ func NewUserService(
 		transaction:            transaction,
 		referralUserRepository: referralUserRepository,
 		balanceRepo:            balanceRepo,
+		referralService:        referralService,
 	}
 }
 
@@ -62,6 +65,12 @@ func (u *UserService) FirstOrCreateByTgId(ctx context.Context, dto *dto.GameStar
 
 			if referrer != nil {
 				err = u.referralUserRepository.Create(ctx, user.ID, referrer.ID)
+
+				if err != nil {
+					return fmt.Errorf("FirstOrCreateByTgId: err %w", err)
+				}
+
+				err = u.referralService.RewardForReferral(ctx, referrer, user)
 
 				if err != nil {
 					return fmt.Errorf("FirstOrCreateByTgId: err %w", err)

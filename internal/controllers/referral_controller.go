@@ -3,10 +3,10 @@ package controllers
 import (
 	"example.com/v2/internal/http/resources"
 	"example.com/v2/internal/repository"
+	"example.com/v2/internal/responses"
 	auth "example.com/v2/internal/services/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"log"
 	"net/http"
 )
 
@@ -33,16 +33,15 @@ func (rc *ReferralController) GetReferrals(c *gin.Context) {
 
 	if err != nil {
 		rc.logger.WithError(err).Error("NewReferralController::getReferrals")
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
+		responses.ServerErrorResponse(c)
 		return
 	}
 
 	referrals, err := rc.repository.GetByUserID(c, user.ID)
 
-	log.Println(referrals)
-
 	if err != nil {
 		rc.logger.WithError(err).Error("NewReferralController::getReferrals")
+		responses.ServerErrorResponse(c)
 		return
 	}
 
@@ -63,11 +62,16 @@ func (rc *ReferralController) GetReferralCount(c *gin.Context) {
 		return
 	}
 
-	count, err := rc.repository.Count(c, user.ID)
+	dto, err := rc.repository.GetReferralStats(c, user.ID)
 
 	if err != nil {
 		rc.logger.WithError(err).Error("NewReferralController::GetReferralCount")
+		responses.ServerErrorResponse(c)
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"count": count})
+	c.JSON(http.StatusOK, gin.H{
+		"count":  dto.Count,
+		"amount": dto.Amount,
+	})
 }

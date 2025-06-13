@@ -12,6 +12,12 @@ type ReferralUserRepository interface {
 	GetByUserID(ctx context.Context, userID uint) ([]models.ReferralUser, error)
 	Create(ctx context.Context, referralUserID uint, userID uint) error
 	Count(ctx context.Context, userID uint) (uint, error)
+	GetReferralStats(ctx context.Context, userID uint) (*ReferralStatsDTO, error)
+}
+
+type ReferralStatsDTO struct {
+	Count  uint
+	Amount uint
 }
 
 type referralUserRepository struct {
@@ -67,4 +73,30 @@ func (r *referralUserRepository) Count(ctx context.Context, userID uint) (uint, 
 	}
 
 	return uint(count), nil
+}
+
+func (r *referralUserRepository) GetReferralStats(ctx context.Context, userID uint) (*ReferralStatsDTO, error) {
+	var dto ReferralStatsDTO
+
+	subQueryCount := r.db.WithContext(ctx).Model(&models.ReferralUser{}).
+		Select("COUNT(id)").
+		Where("user_id = ?", userID)
+
+	subQueryAmount := r.db.WithContext(ctx).Model(&models.Transaction{}).
+		Select("SUM(amount)").
+		Where("user_id = ? AND type = ?", userID, models.TransactionReferralReward)
+
+	err := r.db.WithContext(ctx).
+		Raw(`
+		SELECT 
+			(?) AS count,
+			(?) AS amount
+	`, subQueryCount, subQueryAmount).
+		Scan(&dto).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("ReferralUserRepository::GetReferralStats %v", err)
+	}
+
+	return &dto, nil
 }

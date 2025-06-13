@@ -26,6 +26,7 @@ type TransactionType int16
 const (
 	TransactionTypeIncome        TransactionType = 1
 	TransactionTypeTaskCompleted TransactionType = 2
+	TransactionReferralReward    TransactionType = 3
 	TransactionTypeBuyAspect     TransactionType = 100
 	TransactionTypeUpgradeAspect TransactionType = 101
 )

@@ -14,3 +14,11 @@ type User struct {
 	UserChest  UserChest `json:"user_chest" gorm:"foreignKey:UserID"`
 	Balance    Balance   `json:"balance" gorm:"foreignKey:UserID"`
 }
+
+func (u *User) TableName() string {
+	return "users"
+}
+
+func (u *User) ModelID() int {
+	return int(u.ID)
+}
