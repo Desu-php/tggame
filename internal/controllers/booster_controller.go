@@ -168,6 +168,7 @@ func (as *BoosterController) Buy(c *gin.Context) {
 			CriticalChance: aspectStat.CriticalChance,
 			GoldMultiplier: aspectStat.GoldMultiplier,
 			Amount:         aspectStat.Amount,
+			PassiveDamage:  aspectStat.PassiveDamage,
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
 		}
@@ -296,6 +297,7 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 		userAspect.Damage += aspectStat.Damage
 		userAspect.CriticalChance += aspectStat.CriticalChance
 		userAspect.GoldMultiplier += aspectStat.GoldMultiplier
+		userAspect.PassiveDamage += aspectStat.PassiveDamage
 		userAspect.Amount = uint(amount)
 
 		if err = as.db.WithContext(ctx).Model(models.UserAspect{}).Where("id = ?", userAspect.ID).Updates(userAspect).Error; err != nil {
@@ -320,6 +322,7 @@ func (as *BoosterController) Upgrade(c *gin.Context) {
 			GoldMultiplier: aspectStat.GoldMultiplier,
 			User:           user,
 			Attributable:   &aspect,
+			PassiveDamage:  aspectStat.PassiveDamage,
 		})
 
 		if err != nil {
