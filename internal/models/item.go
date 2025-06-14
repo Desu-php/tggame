@@ -21,6 +21,8 @@ type Item struct {
 	CriticalChance float64   `gorm:"type:decimal(5,2);default:0" json:"critical_chance"`
 	GoldMultiplier float64   `gorm:"type:decimal(5,2);default:0" json:"gold_multiplier"`
 	PassiveDamage  uint      `gorm:"default:0" json:"passive_damage"`
+	IsNFT          bool      `gorm:"default:false" json:"is_nft"`
+	Quantity       uint      `json:"quantity"`
 }
 
 func (a *Item) AttributableName() string {

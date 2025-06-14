@@ -63,6 +63,12 @@ func (s *UserItemService) SetUserItem(ctx context.Context, user *models.User, it
 			return err
 		}
 
+		err = s.userItemRepository.DecrementItem(ctx, item.ID)
+
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 

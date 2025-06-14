@@ -23,7 +23,10 @@ func NewItemRepository(db *db.DB) ItemRepository {
 func (r *itemRepository) GetAllByRarity(ctx context.Context, rarity *models.Rarity) ([]models.Item, error) {
 	var items []models.Item
 
-	if err := r.db.WithContext(ctx).Where("rarity_id = ?", rarity.ID).Find(&items).Error; err != nil {
+	if err := r.db.WithContext(ctx).
+		Where("quantity > 0").
+		Where("rarity_id = ?", rarity.ID).
+		Find(&items).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch items: %v", err)
 	}
 

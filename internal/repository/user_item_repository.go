@@ -14,6 +14,7 @@ type UserItemRepository interface {
 	GetLast(ctx context.Context, userID uint) (*models.UserItem, error)
 	GetUserItems(ctx context.Context, userID uint) ([]GroupedUserItem, error)
 	Exists(ctx context.Context, userID uint, itemID uint) (bool, error)
+	DecrementItem(ctx context.Context, itemID uint) error
 }
 
 type GroupedUserItem struct {
@@ -28,6 +29,7 @@ type GroupedUserItem struct {
 	CriticalChance float64 `json:"critical_chance"`
 	GoldMultiplier float64 `json:"gold_multiplier"`
 	PassiveDamage  uint    `json:"passive_damage"`
+	IsNFT          bool    `json:"is_nft"`
 }
 
 type userItemRepository struct {
@@ -74,7 +76,7 @@ func (r *userItemRepository) GetUserItems(ctx context.Context, userID uint) ([]G
 	var userItems []GroupedUserItem
 
 	result := r.db.WithContext(ctx).Model(models.UserItem{}).
-		Select("i.id, i.name, COUNT(i.id) as count, it.name as type, r.name as rarity, i.image, i.damage, i.critical_damage, i.critical_chance, i.gold_multiplier, i.passive_damage").
+		Select("i.id, i.name, COUNT(i.id) as count, it.name as type, r.name as rarity, i.image, i.damage, i.critical_damage, i.critical_chance, i.gold_multiplier, i.passive_damage, i.is_nft").
 		Joins("JOIN items as i ON i.id = user_items.item_id").
 		Joins("JOIN item_types as it ON it.id = i.type_id").
 		Joins("JOIN rarities as r ON r.id = i.rarity_id").
@@ -102,4 +104,16 @@ func (r *userItemRepository) Exists(ctx context.Context, userID uint, itemID uin
 	}
 
 	return true, nil
+}
+
+func (r *userItemRepository) DecrementItem(ctx context.Context, itemID uint) error {
+	err := r.db.WithContext(ctx).Model(&models.Item{}).
+		Where("id = ?", itemID).
+		UpdateColumn("quantity", gorm.Expr("quantity - ?", 1)).Error
+
+	if err != nil {
+		return fmt.Errorf("UserItemRepository::DecrementItem %w", err)
+	}
+
+	return nil
 }

@@ -31,5 +31,6 @@ func (r *ItemResource) Map(object *models.Item) *responses.ItemResponse {
 		CriticalChance: object.CriticalChance,
 		GoldMultiplier: object.GoldMultiplier,
 		PassiveDamage:  object.PassiveDamage,
+		IsNFT:          object.IsNFT,
 	}
 }
