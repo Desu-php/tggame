@@ -72,6 +72,8 @@ type GroupedUserItemResponse struct {
 	CriticalChance float64 `json:"critical_chance"`
 	GoldMultiplier float64 `json:"gold_multiplier"`
 	PassiveDamage  uint    `json:"passive_damage"`
+	IsNFT          bool    `json:"is_nft"`
+	Description    string  `json:"description"`
 }
 
 type ReferralUserResponse struct {

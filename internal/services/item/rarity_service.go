@@ -18,8 +18,8 @@ func NewRarityService(rarityRepository repository.RarityRepository) *RarityServi
 	return &RarityService{rarityRepository: rarityRepository}
 }
 
-func (s *RarityService) GetRandom(ctx context.Context) (*models.Rarity, error) {
-	rarities, err := s.rarityRepository.GetAll(ctx)
+func (s *RarityService) GetRandom(ctx context.Context, minRarity *models.Rarity) (*models.Rarity, error) {
+	rarities, err := s.rarityRepository.GetAll(ctx, minRarity)
 
 	if err != nil {
 		return nil, fmt.Errorf("RarityService::GetRandom %w", err)

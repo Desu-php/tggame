@@ -30,6 +30,7 @@ type GroupedUserItem struct {
 	GoldMultiplier float64 `json:"gold_multiplier"`
 	PassiveDamage  uint    `json:"passive_damage"`
 	IsNFT          bool    `json:"is_nft"`
+	Description    string  `json:"description"`
 }
 
 type userItemRepository struct {
@@ -76,7 +77,7 @@ func (r *userItemRepository) GetUserItems(ctx context.Context, userID uint) ([]G
 	var userItems []GroupedUserItem
 
 	result := r.db.WithContext(ctx).Model(models.UserItem{}).
-		Select("i.id, i.name, COUNT(i.id) as count, it.name as type, r.name as rarity, i.image, i.damage, i.critical_damage, i.critical_chance, i.gold_multiplier, i.passive_damage, i.is_nft").
+		Select("i.id, i.name, COUNT(i.id) as count, it.name as type, r.name as rarity, i.image, i.damage, i.critical_damage, i.critical_chance, i.gold_multiplier, i.passive_damage, i.is_nft, i.description").
 		Joins("JOIN items as i ON i.id = user_items.item_id").
 		Joins("JOIN item_types as it ON it.id = i.type_id").
 		Joins("JOIN rarities as r ON r.id = i.rarity_id").

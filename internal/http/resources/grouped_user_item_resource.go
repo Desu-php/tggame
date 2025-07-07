@@ -27,5 +27,7 @@ func (r *GroupedUserItemResource) Map(object *repository.GroupedUserItem) *respo
 		CriticalChance: object.CriticalChance,
 		GoldMultiplier: object.GoldMultiplier,
 		PassiveDamage:  object.PassiveDamage,
+		IsNFT:          object.IsNFT,
+		Description:    object.Description,
 	}
 }

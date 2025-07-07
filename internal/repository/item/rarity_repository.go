@@ -9,7 +9,7 @@ import (
 )
 
 type RarityRepository interface {
-	GetAll(ctx context.Context) ([]models.Rarity, error)
+	GetAll(ctx context.Context, minRarity *models.Rarity) ([]models.Rarity, error)
 }
 
 type rarityRepository struct {
@@ -20,10 +20,16 @@ func NewRarityRepository(db *db.DB) RarityRepository {
 	return &rarityRepository{db: db}
 }
 
-func (r *rarityRepository) GetAll(ctx context.Context) ([]models.Rarity, error) {
+func (r *rarityRepository) GetAll(ctx context.Context, minRarity *models.Rarity) ([]models.Rarity, error) {
 	var rarities []models.Rarity
 
-	if err := r.db.WithContext(ctx).Order("sort").Find(&rarities).Error; err != nil {
+	query := r.db.WithContext(ctx).Order("sort")
+
+	if minRarity != nil {
+		query = query.Where("sort >= ?", minRarity.Sort)
+	}
+
+	if err := query.Find(&rarities).Error; err != nil {
 		return nil, fmt.Errorf("RarityRepository::GetAll %v", err)
 	}
 

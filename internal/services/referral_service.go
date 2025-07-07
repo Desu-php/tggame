@@ -4,21 +4,25 @@ import (
 	"context"
 	"example.com/v2/internal/models"
 	"example.com/v2/internal/repository"
+	"example.com/v2/pkg/utils"
 	"fmt"
 )
 
 type ReferralService struct {
-	balanceService *BalanceService
-	repository     repository.ReferralUserRepository
+	balanceService     *BalanceService
+	repository         repository.ReferralUserRepository
+	userStatRepository repository.UserStatRepository
 }
 
 func NewReferralService(
 	balance *BalanceService,
 	repository repository.ReferralUserRepository,
+	userStatRepository repository.UserStatRepository,
 ) *ReferralService {
 	return &ReferralService{
-		balanceService: balance,
-		repository:     repository,
+		balanceService:     balance,
+		repository:         repository,
+		userStatRepository: userStatRepository,
 	}
 }
 
@@ -30,6 +34,14 @@ func (s *ReferralService) RewardForReferral(ctx context.Context, inviter *models
 	}
 
 	reward := s.getAmount(countReferrals)
+
+	userStat, err := s.userStatRepository.GetStat(ctx, inviter)
+
+	if err != nil {
+		return fmt.Errorf("ReferralService::RewardForReferral %w", err)
+	}
+
+	reward = int64(utils.GrowthIncrease(float64(reward), userStat.GoldMultiplier))
 
 	err = s.balanceService.Replenish(ctx, &TransactionDto{
 		Amount: reward,

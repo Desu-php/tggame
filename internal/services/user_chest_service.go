@@ -80,7 +80,7 @@ func (s *UserChestService) LevelUp(ctx context.Context, userChest *models.UserCh
 			return fmt.Errorf("UserChestService::LevelUp %w", err)
 		}
 
-		item, err := s.itemService.GetRandomItem(ctx)
+		item, err := s.itemService.GetRandomItem(ctx, &userChest.Chest.Rarity)
 
 		if err != nil {
 			return fmt.Errorf("UserChestService::LevelUp %w", err)

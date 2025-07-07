@@ -80,6 +80,7 @@ LEFT JOIN (SELECT SUM(critical_damage) as total_critical_damage,
                     group by uth.attributable_id
                     ) as uth on uth.attributable_id = a.id
 WHERE a.type = ?
+order by a.id
 `, user.ID, user.ID, aspectType).Scan(&aspects).Error
 
 	if err != nil {

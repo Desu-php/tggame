@@ -96,6 +96,7 @@ func (uc *UserController) Info(c *gin.Context) {
 		Select("r.id, r.name, count(DISTINCT item_id) as items_count, r.sort").
 		Joins("inner join items as i on i.id = user_items.item_id").
 		Joins("inner join rarities as r on r.id = i.rarity_id").
+		Where("user_items.user_id = ?", user.ID).
 		Group("r.id").
 		Order("r.sort asc").
 		Find(&items).Error
