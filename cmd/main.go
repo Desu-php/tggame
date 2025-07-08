@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"example.com/v2/internal/commands"
+	"example.com/v2/internal/cron"
+	"example.com/v2/pkg"
 	"log"
 	"os"
 	"os/signal"
@@ -15,7 +18,6 @@ import (
 	"example.com/v2/internal/redis"
 	"example.com/v2/internal/repository"
 	"example.com/v2/internal/services"
-	"example.com/v2/pkg"
 	"example.com/v2/routes"
 	"github.com/caddyserver/certmagic"
 	"github.com/gin-contrib/cors"
@@ -30,13 +32,15 @@ func main() {
 			NewGinEngine,
 			redis.NewRedisClient,
 		),
+		pkg.Module,
 		repository.Module,
 		adapter.Module,
 		services.Module,
 		controllers.Module,
-		pkg.Module,
 		fx.Invoke(routes.RegisterRoutes),
 		fx.Invoke(StartServer),
+		cron.Module,
+		commands.Module,
 	)
 
 	if err := app.Start(context.Background()); err != nil {

@@ -22,6 +22,7 @@ require (
 	github.com/libdns/libdns v0.2.2 // indirect
 	github.com/mholt/acmez/v2 v2.0.3 // indirect
 	github.com/miekg/dns v1.1.62 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/zeebo/blake3 v0.2.4 // indirect
 	go.uber.org/dig v1.18.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
