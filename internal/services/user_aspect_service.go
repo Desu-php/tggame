@@ -48,7 +48,7 @@ func (s *UserAspectService) SetAspect(c context.Context, user *models.User, aspe
 			return fmt.Errorf("UserAspectService::SetAspect: %w", err)
 		}
 	} else {
-		if userAspect.ID == aspect.ID {
+		if userAspect.AspectID == aspect.ID {
 			return errs.NewAPIError(
 				errs.AspectAlreadyActiveCode,
 				nil,
@@ -64,10 +64,22 @@ func (s *UserAspectService) SetAspect(c context.Context, user *models.User, aspe
 			)
 		}
 
+		var prevAspect models.Aspect
+
+		err = s.db.DB.WithContext(c).Model(models.Aspect{}).
+			Select("aspects.*").
+			Joins("inner join user_aspects ua on ua.aspect_id = aspects.id and ua.user_id = ?", user.ID).
+			Where("aspects.type = ?", models.Aspects).
+			First(&prevAspect).Error
+
+		if err != nil {
+			return fmt.Errorf("UserAspectService::SetAspect: %w", err)
+		}
+
 		err = s.trx.RunInTransaction(c, func(ctx context.Context) error {
 			err = s.userStatService.Downgrade(ctx, &UserStatDowngradeDto{
 				User:         user,
-				Attributable: aspect,
+				Attributable: &prevAspect,
 			})
 
 			if err != nil {
