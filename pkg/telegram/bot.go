@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"example.com/v2/config"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 )
 
@@ -17,11 +19,13 @@ func NewBot(token string) *Bot {
 }
 
 func ProvideTelegramBot(cfg *config.Config) *Bot {
-	return NewBot(cfg.Telegram.Token)
+	return NewBot(cfg.Telegram.NotificationToken)
 }
 
 func (b *Bot) SendMessage(message string, chatId uint64) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", b.token)
+
+	log.Println(url, message, chatId)
 
 	payload := map[string]interface{}{
 		"chat_id": chatId,
@@ -40,7 +44,8 @@ func (b *Bot) SendMessage(message string, chatId uint64) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code from Telegram API: %d", resp.StatusCode)
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("unexpected status code from Telegram API: %d, response: %s", resp.StatusCode, string(respBody))
 	}
 
 	return nil

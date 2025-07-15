@@ -36,7 +36,8 @@ type Redis struct {
 }
 
 type Telegram struct {
-	Token string
+	Token             string
+	NotificationToken string
 }
 
 type Aws struct {
@@ -70,7 +71,8 @@ func LoadConfig() *Config {
 			Password: os.Getenv("REDIS_PASSWORD"),
 		},
 		Telegram: &Telegram{
-			Token: os.Getenv("TELEGRAM_BOT_TOKEN"),
+			Token:             os.Getenv("TELEGRAM_BOT_TOKEN"),
+			NotificationToken: os.Getenv("NOTIFICATION_BOT_TOKEN"),
 		},
 		Aws: &Aws{
 			Bucket:   os.Getenv("AWS_BUCKET"),

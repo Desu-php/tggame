@@ -5,6 +5,7 @@ import (
 	"example.com/v2/internal/services/notification"
 	"example.com/v2/pkg/db"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"log"
 	"strconv"
 )
@@ -12,15 +13,18 @@ import (
 type DailyRewardReminderCommand struct {
 	telegramChannel *notification.TelegramChannel
 	db              *db.DB
+	logger          *logrus.Logger
 }
 
 func NewDailyRewardReminderCommand(
 	telegramChannel *notification.TelegramChannel,
 	db *db.DB,
+	logger *logrus.Logger,
 ) *DailyRewardReminderCommand {
 	return &DailyRewardReminderCommand{
 		telegramChannel,
 		db,
+		logger,
 	}
 }
 
@@ -62,14 +66,15 @@ func (c *DailyRewardReminderCommand) Execute() error {
 				&notification.Receiver{ID: strconv.FormatUint(user.TelegramID, 10)},
 			)
 			if err != nil {
-				return fmt.Errorf("failed to send notification: %w", err)
+				c.logger.WithError(err).Error("DailyRewardReminderCommand::Execute")
 			}
+
 			userIDs = append(userIDs, user.ID)
 		}
 
 		if len(userIDs) > 0 {
 			if err = c.db.DB.Model(&models.UserTask{}).
-				Where("user_id IN ? AND is_completed = false AND is_notified = false", userIDs).
+				Where("user_id IN ? AND completed_at is null AND is_notified = false", userIDs).
 				Update("is_notified", true).Error; err != nil {
 				return fmt.Errorf("failed to update is_notified: %w", err)
 			}
