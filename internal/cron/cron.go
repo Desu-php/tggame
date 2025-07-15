@@ -19,7 +19,7 @@ func StartTasks(
 ) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			_, err := c.AddFunc("0 */01 * * * *", func() {
+			_, err := c.AddFunc("0 */30 * * * *", func() {
 				log.Println("⏰ CRON: Проверка непринятых наград")
 
 				err := dailyRewardReminderCommand.Execute()
