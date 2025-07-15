@@ -14,6 +14,7 @@ type UserTask struct {
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 	Task        *Task
+	IsNotified  bool
 }
 
 func (u *UserTask) TableName() string {
