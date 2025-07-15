@@ -66,7 +66,10 @@ func (r *userChestRepository) Update(ctx context.Context, userChest *models.User
 func (r *userChestRepository) FindByUser(ctx context.Context, user *models.User) (*models.UserChest, error) {
 	var userChest models.UserChest
 
-	result := r.db.WithContext(ctx).Preload("Chest.Rarity").First(&userChest, "user_id = ?", user.ID)
+	result := r.db.WithContext(ctx).
+		Preload("Chest.Rarity").
+		Preload("Chest.MaxRarity").
+		First(&userChest, "user_id = ?", user.ID)
 
 	if result.Error != nil {
 		return nil, fmt.Errorf("UserChestRepository::FindByUser: err %w", result.Error)

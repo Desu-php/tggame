@@ -15,8 +15,10 @@ type Chest struct {
 	CreatedAt          time.Time `gorm:"autoCreateTime" json:"created_at"`                       // Время создания
 	UpdatedAt          time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 	RarityID           uint      `gorm:"not null" json:"rarity_id"`
+	MaxRarityID        uint      `json:"max_rarity_id"`
 	StartLevel         uint      `gorm:"not null" json:"start_level"`
 	EndLevel           uint      `gorm:"not null" json:"end_level"`
 	Rarity             Rarity    `gorm:"foreignKey:RarityID" json:"rarity"`
+	MaxRarity          *Rarity   `gorm:"foreignKey:MaxRarityID" json:"max_rarity"`
 	Image              string    `gorm:"type:varchar(255);not null" json:"image"`
 }

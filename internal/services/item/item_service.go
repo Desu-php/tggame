@@ -24,8 +24,8 @@ func NewItemService(
 	}
 }
 
-func (s *ItemService) GetRandomItem(ctx context.Context, minRarity *models.Rarity) (*models.Item, error) {
-	rarity, err := s.rarityService.GetRandom(ctx, minRarity)
+func (s *ItemService) GetRandomItem(ctx context.Context, minRarity *models.Rarity, maxRarity *models.Rarity) (*models.Item, error) {
+	rarity, err := s.rarityService.GetRandom(ctx, minRarity, maxRarity)
 	if err != nil {
 		return nil, fmt.Errorf("ItemService::GetRandomItem %w", err)
 	}

@@ -27,7 +27,10 @@ func NewChestRepository(db *db.DB) ChestRepository {
 func (r *chestRepository) GetDefault(ctx context.Context) (*models.Chest, error) {
 	var chest models.Chest
 
-	result := r.db.WithContext(ctx).Preload("Rarity").Where(&models.Chest{IsDefault: true}).First(&chest)
+	result := r.db.WithContext(ctx).
+		Preload("Rarity").
+		Preload("MaxRarity").
+		Where(&models.Chest{IsDefault: true}).First(&chest)
 
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -47,6 +50,7 @@ func (r *chestRepository) GetNextChest(ctx context.Context, currentLevel uint) (
 
 	result := dbContext.Model(&models.Chest{}).
 		Preload("Rarity").
+		Preload("MaxRarity").
 		Where("start_level <= ?", currentLevel).
 		Where("end_level >= ?", currentLevel).
 		First(&chest)
@@ -54,6 +58,7 @@ func (r *chestRepository) GetNextChest(ctx context.Context, currentLevel uint) (
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 		result = dbContext.Model(&models.Chest{}).
 			Preload("Rarity").
+			Preload("MaxRarity").
 			Order("end_level desc").
 			First(&chest)
 
